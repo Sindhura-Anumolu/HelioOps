@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HelioOps — AI-Powered Bed Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080C14;
+    --surface: #0F1623;
+    --surface2: #151D2E;
+    --border: #1E2B42;
+    --accent: #00D4FF;
+    --accent2: #0099CC;
+    --green: #00E5A0;
+    --yellow: #FFB800;
+    --red: #FF4757;
+    --text: #E8F0FF;
+    --muted: #5A6A85;
+    --font-display: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* GRID BG */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: rgba(8,12,20,0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  .hospital-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .live-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .live-dot {
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  /* NAV TABS */
+  .nav {
+    position: fixed;
+    top: 56px; left: 0; right: 0;
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 4px;
+    z-index: 99;
+  }
+
+  .nav-tab {
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .nav-tab:hover { color: var(--text); background: var(--surface2); }
+
+  .nav-tab.active {
+    color: var(--accent);
+    background: rgba(0,212,255,0.08);
+    border-color: rgba(0,212,255,0.2);
+  }
+
+  .nav-tab .role-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    display: block;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+
+  /* MAIN */
+  .main {
+    padding-top: 104px;
+    padding-bottom: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .view { display: none; padding: 24px; }
+  .view.active { display: block; animation: fadeIn 0.3s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* SECTION HEADER */
+  .section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.5px;
+  }
+
+  .section-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    margin-top: 4px;
+  }
+
+  .timestamp {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* CARDS GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .card-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 36px;
+    letter-spacing: -1px;
+    line-height: 1;
+  }
+
+  .card-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  .accent { color: var(--accent); }
+  .green { color: var(--green); }
+  .yellow { color: var(--yellow); }
+  .red { color: var(--red); }
+
+  /* ALERT CARD */
+  .alert-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .alert-card:hover {
+    border-color: var(--accent);
+    background: var(--surface2);
+    transform: translateX(4px);
+  }
+
+  .alert-card.urgent {
+    border-left: 3px solid var(--red);
+  }
+
+  .alert-card.ready {
+    border-left: 3px solid var(--green);
+  }
+
+  .alert-card.predicted {
+    border-left: 3px solid var(--accent);
+  }
+
+  .alert-card.warning {
+    border-left: 3px solid var(--yellow);
+  }
+
+  .alert-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .alert-icon.urgent { background: rgba(255,71,87,0.12); }
+  .alert-icon.ready { background: rgba(0,229,160,0.12); }
+  .alert-icon.predicted { background: rgba(0,212,255,0.12); }
+  .alert-icon.warning { background: rgba(255,184,0,0.12); }
+
+  .alert-content { flex: 1; }
+
+  .alert-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+
+  .alert-detail {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--font-mono);
+  }
+
+  .alert-time {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .alert-action {
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.2);
+    color: var(--accent);
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .alert-action:hover {
+    background: rgba(0,212,255,0.2);
+    border-color: var(--accent);
+  }
+
+  /* BED MAP */
+  .bed-map {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 8px;
+  }
+
+  .bed-cell {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    position: relative;
+  }
+
+  .bed-cell:hover { transform: scale(1.1); z-index: 2; }
+
+  .bed-cell.occupied {
+    background: rgba(255,71,87,0.15);
+    border-color: rgba(255,71,87,0.3);
+    color: var(--red);
+  }
+
+  .bed-cell.available {
+    background: rgba(0,229,160,0.15);
+    border-color: rgba(0,229,160,0.3);
+    color: var(--green);
+  }
+
+  .bed-cell.cleaning {
+    background: rgba(255,184,0,0.15);
+    border-color: rgba(255,184,0,0.3);
+    color: var(--yellow);
+  }
+
+  .bed-cell.predicted-discharge {
+    background: rgba(0,212,255,0.15);
+    border-color: rgba(0,212,255,0.4);
+    color: var(--accent);
+    box-shadow: 0 0 12px rgba(0,212,255,0.2);
+    animation: glow 2s infinite;
+  }
+
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 8px rgba(0,212,255,0.2); }
+    50% { box-shadow: 0 0 18px rgba(0,212,255,0.4); }
+  }
+
+  .bed-num { font-size: 11px; font-weight: 500; }
+  .bed-status { font-size: 8px; margin-top: 2px; opacity: 0.8; }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 3px;
+  }
+
+  /* PROGRESS BAR */
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    margin-top: 10px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s ease;
+  }
+
+  /* UNIT ROW */
+  .unit-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .unit-row:last-child { border-bottom: none; }
+
+  .unit-name {
+    font-weight: 600;
+    font-size: 13px;
+    width: 140px;
+    flex-shrink: 0;
+  }
+
+  .unit-stats {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    width: 80px;
+    flex-shrink: 0;
+  }
+
+  .unit-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .unit-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1.2s ease;
+  }
+
+  .unit-pct {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    width: 40px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* METRIC CARD */
+  .metric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .metric-row:last-child { border-bottom: none; }
+
+  .metric-label { font-size: 13px; color: var(--muted); }
+
+  .metric-val {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 18px;
+  }
+
+  /* SECTION SPACER */
+  .spacer { margin-bottom: 20px; }
+
+  /* BADGE */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    font-weight: 500;
+  }
+
+  .badge.green { background: rgba(0,229,160,0.12); color: var(--green); border: 1px solid rgba(0,229,160,0.2); }
+  .badge.red { background: rgba(255,71,87,0.12); color: var(--red); border: 1px solid rgba(255,71,87,0.2); }
+  .badge.yellow { background: rgba(255,184,0,0.12); color: var(--yellow); border: 1px solid rgba(255,184,0,0.2); }
+  .badge.accent { background: rgba(0,212,255,0.12); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+
+  /* DIVIDER */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  /* TOOLTIP */
+  .tooltip {
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    max-width: 200px;
+  }
+
+  /* NOTIFICATION POPUP */
+  .notification {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--green);
+    border-radius: 12px;
+    padding: 16px 20px;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,229,160,0.15);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 320px;
+  }
+
+  .notification.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .notification-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+
+  .notification-text { font-size: 13px; }
+  .notification-text strong { display: block; margin-bottom: 2px; color: var(--green); }
+
+  /* CHART BAR */
+  .bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    height: 120px;
+    padding-bottom: 24px;
+    position: relative;
+  }
+
+  .bar-chart::after {
+    content: '';
+    position: absolute;
+    bottom: 24px;
+    left: 0; right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .bar-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    height: 100%;
+    justify-content: flex-end;
+  }
+
+  .bar {
+    width: 100%;
+    border-radius: 4px 4px 0 0;
+    transition: height 1s ease;
+    position: relative;
+  }
+
+  .bar-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--muted);
+    position: absolute;
+    bottom: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  /* ROI HIGHLIGHT */
+  .roi-box {
+    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,229,160,0.08));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .roi-value {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 48px;
+    letter-spacing: -2px;
+    background: linear-gradient(135deg, var(--accent), var(--green));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .roi-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+
+  @media (max-width: 768px) {
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr 1fr; }
+    .bed-map { grid-template-columns: repeat(6, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    HelioOps
+  </div>
+  <div class="hospital-name">City General Hospital</div>
+  <div class="live-badge">
+    <div class="live-dot"></div>
+    LIVE
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-tab active" onclick="switchView('nurse')">
+    <span class="role-label">View 1</span>
+    Charge Nurse
+  </div>
+  <div class="nav-tab" onclick="switchView('coordinator')">
+    <span class="role-label">View 2</span>
+    Bed Coordinator
+  </div>
+  <div class="nav-tab" onclick="switchView('admin')">
+    <span class="role-label">View 3</span>
+    CNO / Administrator
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ==================== VIEW 1: CHARGE NURSE ==================== -->
+  <div class="view active" id="view-nurse">
+    <div class="section-header">
+      <div>
+        <div class="section-title">My Unit — 4B Medical/Surgical</div>
+        <div class="section-sub">28 BEDS · FLOOR 4 · NORTH WING</div>
+      </div>
+      <div class="timestamp">Updated 2 min ago · 14 Feb 2026, 09:41</div>
+    </div>
+
+    <!-- STATS ROW -->
+    <div class="grid-4 spacer">
+      <div class="card">
+        <div class="card-label">Occupied Beds</div>
+        <div class="card-value red">21</div>
+        <div class="card-sub">of 28 total</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:75%; background: var(--red);"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Available Now</div>
+        <div class="card-value green">4</div>
+        <div class="card-sub">ready to admit</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:14%; background: var(--green);"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Predicted Free</div>
+        <div class="card-value accent">3</div>
+        <div class="card-sub">within 2 hours</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:11%; background: var(--accent);"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Cleaning</div>
+        <div class="card-value yellow">2</div>
+        <div class="card-sub">avg 22 min</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:7%; background: var(--yellow);"></div></div>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="grid-2 spacer">
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px;">⚡ Active Alerts</div>
+
+        <div class="alert-card urgent" onclick="showNotification('Bed 4B-12 flagged. Care team notified.', '🚨')">
+          <div class="alert-icon urgent">🚨</div>
+          <div class="alert-content">
+            <div class="alert-title">Boarding Patient — ED Wait 4h+</div>
+            <div class="alert-detail">BED 4B-12 · Patient ready for admit from ED since 05:30</div>
+          </div>
+          <div>
+            <div class="alert-time">9:41 AM</div>
+            <button class="alert-action" style="margin-top:6px;">Assign</button>
+          </div>
+        </div>
+
+        <div class="alert-card ready" onclick="showNotification('Bed 4B-07 marked available. Housekeeping notified.', '✅')">
+          <div class="alert-icon ready">✅</div>
+          <div class="alert-content">
+            <div class="alert-title">Discharge Complete — Bed Ready</div>
+            <div class="alert-detail">BED 4B-07 · Patient discharged. Cleaning in progress.</div>
+          </div>
+          <div>
+            <div class="alert-time">9:38 AM</div>
+            <button class="alert-action" style="margin-top:6px;">Confirm</button>
+          </div>
+        </div>
+
+        <div class="alert-card predicted" onclick="showNotification('Prediction noted. Discharge workflow started for 4B-03.', '🔮')">
+          <div class="alert-icon predicted">🔮</div>
+          <div class="alert-content">
+            <div class="alert-title">Predicted Discharge in ~90 min</div>
+            <div class="alert-detail">BED 4B-03 · 87% confidence · LOS Day 4 · Dr. Patel</div>
+          </div>
+          <div>
+            <div class="alert-time">Predicted</div>
+            <button class="alert-action" style="margin-top:6px;">Prep</button>
+          </div>
+        </div>
+
+        <div class="alert-card warning" onclick="showNotification('LOS alert logged for 4B-19. Case manager notified.', '⚠️')">
+          <div class="alert-icon warning">⚠️</div>
+          <div class="alert-content">
+            <div class="alert-title">Extended LOS — Day 7</div>
+            <div class="alert-detail">BED 4B-19 · Exceeds avg LOS by 3 days · Review needed</div>
+          </div>
+          <div>
+            <div class="alert-time">Today</div>
+            <button class="alert-action" style="margin-top:6px;">Review</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BED MAP -->
+      <div>
+        <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 12px;">🗺 Unit 4B Bed Map</div>
+        <div class="card">
+          <div class="bed-map" id="bedmap"></div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(255,71,87,0.5)"></div>Occupied</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(0,229,160,0.5)"></div>Available</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(255,184,0,0.5)"></div>Cleaning</div>
+            <div class="legend-item"><div class="legend-dot" style="background:rgba(0,212,255,0.5)"></div>Predicted Discharge</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 2: BED COORDINATOR ==================== -->
+  <div class="view" id="view-coordinator">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Hospital-Wide Bed Flow</div>
+        <div class="section-sub">ALL UNITS · REAL-TIME OVERVIEW · CITY GENERAL HOSPITAL</div>
+      </div>
+      <div class="timestamp">14 Feb 2026 · 09:41 AM</div>
+    </div>
+
+    <!-- TOP STATS -->
+    <div class="grid-4 spacer">
+      <div class="card">
+        <div class="card-label">Overall Utilization</div>
+        <div class="card-value accent">79%</div>
+        <div class="card-sub">↑ 4% from yesterday</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:79%; background: linear-gradient(90deg, var(--accent), var(--green));"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-label">Total Available</div>
+        <div class="card-value green">38</div>
+        <div class="card-sub">of 182 beds</div>
+      </div>
+      <div class="card">
+        <div class="card-label">ED Patients Boarding</div>
+        <div class="card-value red">14</div>
+        <div class="card-sub">avg wait 3.2 hrs</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Predicted Discharges</div>
+        <div class="card-value accent">22</div>
+        <div class="card-sub">next 4 hours</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <!-- UNIT BREAKDOWN -->
+      <div class="card">
+        <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px;">Unit Capacity</div>
+
+        <div class="unit-row">
+          <div class="unit-name">4B Med/Surg</div>
+          <div class="unit-stats">21/28</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:75%; background: var(--yellow);"></div></div>
+          <div class="unit-pct yellow">75%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">3A Cardiology</div>
+          <div class="unit-stats">26/28</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:93%; background: var(--red);"></div></div>
+          <div class="unit-pct red">93%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">5C Orthopedics</div>
+          <div class="unit-stats">18/24</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:75%; background: var(--yellow);"></div></div>
+          <div class="unit-pct yellow">75%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">2B Neurology</div>
+          <div class="unit-stats">14/20</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:70%; background: var(--green);"></div></div>
+          <div class="unit-pct green">70%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">ICU</div>
+          <div class="unit-stats">15/16</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:94%; background: var(--red);"></div></div>
+          <div class="unit-pct red">94%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">6A Oncology</div>
+          <div class="unit-stats">20/28</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:71%; background: var(--green);"></div></div>
+          <div class="unit-pct green">71%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">1C Pediatrics</div>
+          <div class="unit-stats">16/22</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:73%; background: var(--green);"></div></div>
+          <div class="unit-pct green">73%</div>
+        </div>
+        <div class="unit-row">
+          <div class="unit-name">4A Telemetry</div>
+          <div class="unit-stats">14/16</div>
+          <div class="unit-bar"><div class="unit-fill" style="width:88%; background: var(--yellow);"></div></div>
+          <div class="unit-pct yellow">88%</div>
+        </div>
+      </div>
+
+      <!-- PREDICTED DISCHARGES + PENDING ADMITS -->
+      <div>
+        <div class="card spacer">
+          <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px;">🔮 Next 4hr Predicted Discharges</div>
+
+          <div class="alert-card predicted" style="margin-bottom:8px;" onclick="showNotification('Transfer initiated for 3A-08. Care coordination notified.', '🔄')">
+            <div class="alert-icon predicted">🔮</div>
+            <div class="alert-content">
+              <div class="alert-title">3A-08 · Cardiology</div>
+              <div class="alert-detail">Discharge in ~45 min · 92% confidence</div>
+            </div>
+            <span class="badge accent">HIGH</span>
+          </div>
+
+          <div class="alert-card predicted" style="margin-bottom:8px;" onclick="showNotification('Bed 4B-03 prep started.', '🔄')">
+            <div class="alert-icon predicted">🔮</div>
+            <div class="alert-content">
+              <div class="alert-title">4B-03 · Med/Surg</div>
+              <div class="alert-detail">Discharge in ~90 min · 87% confidence</div>
+            </div>
+            <span class="badge accent">HIGH</span>
+          </div>
+
+          <div class="alert-card predicted" style="margin-bottom:8px;" onclick="showNotification('ICU-11 monitored. Step-down bed reserved.', '🔄')">
+            <div class="alert-icon predicted">🔮</div>
+            <div class="alert-content">
+              <div class="alert-title">ICU-11 · Step-down</div>
+              <div class="alert-detail">Transfer ready in ~2hr · 81% confidence</div>
+            </div>
+            <span class="badge yellow">MED</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px;">⏳ ED Boarding Queue</div>
+
+          <div class="alert-card urgent" style="margin-bottom:8px;" onclick="showNotification('ED patient priority flagged. Escalated to CNO.', '🚨')">
+            <div class="alert-icon urgent">🚨</div>
+            <div class="alert-content">
+              <div class="alert-title">Chest pain admit · 4h 12m wait</div>
+              <div class="alert-detail">Needs: Cardiology bed · 3A preferred</div>
+            </div>
+            <span class="badge red">URGENT</span>
+          </div>
+
+          <div class="alert-card warning" style="margin-bottom:8px;" onclick="showNotification('Hip fracture patient queued. 5C notified.', '⚠️')">
+            <div class="alert-icon warning">⚠️</div>
+            <div class="alert-content">
+              <div class="alert-title">Hip fracture · 2h 30m wait</div>
+              <div class="alert-detail">Needs: Orthopedics · 5C available soon</div>
+            </div>
+            <span class="badge yellow">WAITING</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VIEW 3: CNO / ADMINISTRATOR ==================== -->
+  <div class="view" id="view-admin">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Executive Dashboard</div>
+        <div class="section-sub">OPERATIONAL PERFORMANCE · CITY GENERAL HOSPITAL · FEB 2026</div>
+      </div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <span class="badge green">↑ On Target</span>
+        <div class="timestamp">14 Feb 2026</div>
+      </div>
+    </div>
+
+    <!-- ROI CARDS -->
+    <div class="grid-3 spacer">
+      <div class="roi-box">
+        <div class="roi-value">82%</div>
+        <div class="roi-label">Bed Utilization Rate</div>
+        <div style="font-size:12px; color: var(--green); margin-top:8px;">↑ from 74% pre-HelioOps</div>
+      </div>
+      <div class="roi-box">
+        <div class="roi-value">$2.5M</div>
+        <div class="roi-label">Projected Annual Revenue Gain</div>
+        <div style="font-size:12px; color: var(--green); margin-top:8px;">+17 virtual beds unlocked</div>
+      </div>
+      <div class="roi-box">
+        <div class="roi-value">38%</div>
+        <div class="roi-label">Reduction in ED Boarding Time</div>
+        <div style="font-size:12px; color: var(--green); margin-top:8px;">Avg wait: 3.2h → 2.0h</div>
+      </div>
+    </div>
+
+    <div class="grid-2 spacer">
+      <!-- TREND CHART -->
+      <div class="card">
+        <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px;">Utilization Trend — Last 7 Days</div>
+        <div class="bar-chart">
+          <div class="bar-wrap">
+            <div class="bar" style="height:60%; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.2));">
+              <span class="bar-label">Mon</span>
+            </div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:68%; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.2));">
+              <span class="bar-label">Tue</span>
+            </div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:72%; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.2));">
+              <span class="bar-label">Wed</span>
+            </div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:74%; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.2));">
+              <span class="bar-label">Thu</span>
+            </div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:78%; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.2));">
+              <span class="bar-label">Fri</span>
+            </div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:76%; background: linear-gradient(180deg, rgba(0,212,255,0.6), rgba(0,212,255,0.2));">
+              <span class="bar-label">Sat</span>
+            </div>
+          </div>
+          <div class="bar-wrap">
+            <div class="bar" style="height:82%; background: linear-gradient(180deg, var(--accent), rgba(0,212,255,0.3)); box-shadow: 0 0 12px rgba(0,212,255,0.3);">
+              <span class="bar-label" style="color: var(--accent);">Today</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color: var(--muted); font-family: var(--font-mono); margin-top:8px;">
+          <span>Target: 82%</span>
+          <span style="color: var(--green);">✓ Achieved today</span>
+        </div>
+      </div>
+
+      <!-- KEY METRICS -->
+      <div class="card">
+        <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px;">Key Performance Metrics</div>
+
+        <div class="metric-row">
+          <div class="metric-label">Avg Length of Stay</div>
+          <div class="metric-val green">4.1 days <span style="font-size:13px; color: var(--green)">↓</span></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Discharge by Noon Rate</div>
+          <div class="metric-val accent">41%</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Bed Turnaround Time</div>
+          <div class="metric-val green">22 min <span style="font-size:13px; color: var(--green)">↓</span></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Prediction Accuracy</div>
+          <div class="metric-val accent">89%</div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Staff Alert Fatigue Score</div>
+          <div class="metric-val green">Low <span style="font-size:13px; color: var(--green)">↓ 62%</span></div>
+        </div>
+        <div class="metric-row">
+          <div class="metric-label">Diverted Ambulances (MTD)</div>
+          <div class="metric-val green">3 <span style="font-size:13px; color: var(--green)">↓ from 11</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM IMPACT ROW -->
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-label">Virtual Beds Unlocked</div>
+        <div class="card-value accent">+17</div>
+        <div class="card-sub">equivalent new capacity, no construction</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Revenue / Bed / Year</div>
+        <div class="card-value green">$147K</div>
+        <div class="card-sub">×17 virtual beds = $2.5M annual gain</div>
+      </div>
+      <div class="card">
+        <div class="card-label">HelioOps ROI</div>
+        <div class="card-value accent">14×</div>
+        <div class="card-sub">return on platform investment</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip"></div>
+
+<!-- NOTIFICATION -->
+<div class="notification" id="notification">
+  <div class="notification-icon" id="notif-icon">✅</div>
+  <div class="notification-text">
+    <strong id="notif-title">Action Taken</strong>
+    <span id="notif-body">HelioOps has notified the care team.</span>
+  </div>
+</div>
+
+<script>
+// VIEW SWITCHING
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  event.target.closest('.nav-tab').classList.add('active');
+}
+
+// BED MAP GENERATION
+const bedStates = [
+  'occupied','occupied','predicted-discharge','occupied','available','occupied','occupied','cleaning',
+  'occupied','available','occupied','occupied','occupied','predicted-discharge','occupied','occupied',
+  'cleaning','occupied','occupied','available','occupied','occupied','occupied','occupied',
+  'occupied','available','occupied','predicted-discharge'
+];
+
+const map = document.getElementById('bedmap');
+bedStates.forEach((state, i) => {
+  const num = `4B-${String(i+1).padStart(2,'0')}`;
+  const labels = { occupied:'OCC', available:'FREE', cleaning:'CLEAN', 'predicted-discharge':'~2HR' };
+  const cell = document.createElement('div');
+  cell.className = `bed-cell ${state}`;
+  cell.innerHTML = `<span class="bed-num">${num}</span><span class="bed-status">${labels[state]}</span>`;
+  cell.title = num;
+  cell.onclick = () => {
+    const msgs = {
+      occupied: ['Patient in bed', '🛏️'],
+      available: ['Bed ready for admission', '✅'],
+      cleaning: ['Housekeeping in progress', '🧹'],
+      'predicted-discharge': ['Predicted discharge in ~2 hours', '🔮']
+    };
+    showNotification(msgs[state][0] + ' — ' + num, msgs[state][1]);
+  };
+  map.appendChild(cell);
+});
+
+// NOTIFICATION
+let notifTimer;
+function showNotification(msg, icon) {
+  const notif = document.getElementById('notification');
+  document.getElementById('notif-icon').textContent = icon || '✅';
+  document.getElementById('notif-title').textContent = 'HelioOps Action';
+  document.getElementById('notif-body').textContent = msg;
+  notif.classList.add('show');
+  clearTimeout(notifTimer);
+  notifTimer = setTimeout(() => notif.classList.remove('show'), 3500);
+}
+</script>
+</body>
+</html>
