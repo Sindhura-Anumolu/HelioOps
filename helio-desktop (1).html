@@ -1,0 +1,1707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HELIO-OPS — Hospital Intelligence Platform</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #07090f;
+  --surface: #0d1117;
+  --surface2: #111820;
+  --surface3: #161e2a;
+  --border: #1a2535;
+  --border2: #243245;
+  --cyan: #00e5e5;
+  --cyan-dim: rgba(0,229,229,0.12);
+  --green: #00d68f;
+  --green-dim: rgba(0,214,143,0.12);
+  --red: #ff3d5a;
+  --red-dim: rgba(255,61,90,0.12);
+  --yellow: #ffcc00;
+  --yellow-dim: rgba(255,204,0,0.12);
+  --blue: #2d9cff;
+  --blue-dim: rgba(45,156,255,0.12);
+  --purple: #9b72ff;
+  --text: #dce8f5;
+  --text2: #8fa3bc;
+  --text3: #4d6278;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #00e5e5, #0077ff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.logo-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--cyan);
+}
+
+.logo-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.topbar-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 6px;
+}
+
+.role-btn {
+  padding: 6px 16px;
+  border-radius: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: none;
+  cursor: pointer;
+  color: var(--text3);
+  background: transparent;
+  transition: all 0.2s;
+}
+
+.role-btn.active {
+  background: var(--surface3);
+  color: var(--cyan);
+  border: 1px solid var(--border2);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.live-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,214,143,0.1);
+  border: 1px solid rgba(0,214,143,0.25);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--green);
+  letter-spacing: 1px;
+}
+
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(0,214,143,0.4)} 50%{opacity:0.6;box-shadow:0 0 0 4px rgba(0,214,143,0)} }
+
+.time-display {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.hospital-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text2);
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+/* ── MAIN LAYOUT ── */
+.main {
+  display: flex;
+  height: calc(100vh - 56px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-section {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 8px 8px 4px;
+  margin-top: 8px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  color: var(--text2);
+  border: 1px solid transparent;
+}
+
+.sidebar-item:hover { background: var(--surface2); color: var(--text); }
+.sidebar-item.active { background: var(--cyan-dim); color: var(--cyan); border-color: rgba(0,229,229,0.15); }
+.sidebar-icon { font-size: 15px; width: 20px; text-align: center; }
+
+.sidebar-badge {
+  margin-left: auto;
+  background: var(--red-dim);
+  color: var(--red);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 1px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,61,90,0.25);
+}
+
+.sidebar-badge.green {
+  background: var(--green-dim);
+  color: var(--green);
+  border-color: rgba(0,214,143,0.25);
+}
+
+/* ── CONTENT ── */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 20px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+/* ── VIEWS ── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── PAGE HEADER ── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+.page-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  margin-top: 4px;
+  text-transform: uppercase;
+}
+
+.header-actions { display: flex; gap: 8px; }
+
+.btn-primary {
+  padding: 8px 18px;
+  background: var(--cyan-dim);
+  border: 1px solid rgba(0,229,229,0.3);
+  color: var(--cyan);
+  border-radius: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary:hover { background: rgba(0,229,229,0.2); }
+.btn-ghost { padding: 8px 18px; background: transparent; border: 1px solid var(--border2); color: var(--text2); border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; cursor: pointer; }
+
+/* ── STAT STRIP ── */
+.stat-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.stat-tile:hover { border-color: var(--border2); }
+
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.stat-tile.red::before { background: var(--red); }
+.stat-tile.green::before { background: var(--green); }
+.stat-tile.blue::before { background: var(--blue); }
+.stat-tile.yellow::before { background: var(--yellow); }
+.stat-tile.cyan::before { background: var(--cyan); }
+
+.stat-tile-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--text3);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.stat-tile-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.stat-tile-sub { font-size: 11px; color: var(--text3); }
+.stat-tile-trend { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 6px; }
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-neutral { color: var(--yellow); }
+
+/* ── GRID LAYOUTS ── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-60-40 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 16px; }
+.grid-40-60 { display: grid; grid-template-columns: 1fr 1.5fr; gap: 16px; margin-bottom: 16px; }
+
+/* ── PANELS ── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.panel-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,61,90,0.25); }
+.badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,0.25); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(45,156,255,0.25); }
+.badge-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,204,0,0.25); }
+.badge-cyan { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,229,229,0.25); }
+
+.panel-body { padding: 16px 18px; }
+
+/* ── DISCHARGE PREDICTIONS ── */
+.discharge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+
+.discharge-row:last-child { border-bottom: none; }
+.discharge-row:hover { background: var(--surface2); }
+
+.dc-confidence {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.conf-high { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,0.3); }
+.conf-med { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,204,0,0.3); }
+.conf-low { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(45,156,255,0.3); }
+
+.dc-info { flex: 1; }
+.dc-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.dc-meta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); }
+
+.dc-blockers { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.blocker-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 5px; }
+.blocker-ok { background: var(--green-dim); color: var(--green); }
+.blocker-warn { background: var(--red-dim); color: var(--red); }
+.blocker-pend { background: var(--yellow-dim); color: var(--yellow); }
+
+.dc-eta {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.eta-time { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--text); }
+.eta-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+.dc-action {
+  flex-shrink: 0;
+}
+
+.action-btn {
+  padding: 6px 14px;
+  border-radius: 7px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.action-btn:active { transform: scale(0.95); }
+.btn-prep { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(45,156,255,0.3); }
+.btn-expedite { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,61,90,0.3); }
+.btn-ready { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,0.3); }
+.btn-assign-sm { background: var(--cyan-dim); color: var(--cyan); border: 1px solid rgba(0,229,229,0.3); }
+
+/* ── BED MAP ── */
+.bed-grid-desktop {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  padding: 16px 18px;
+}
+
+.bed-tile {
+  aspect-ratio: 1.2;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+  position: relative;
+}
+
+.bed-tile:hover { transform: scale(1.05); z-index: 1; }
+
+.bed-tile.occ { background: rgba(255,61,90,0.2); border-color: rgba(255,61,90,0.35); }
+.bed-tile.free { background: rgba(0,214,143,0.2); border-color: rgba(0,214,143,0.4); }
+.bed-tile.clean { background: rgba(255,204,0,0.15); border-color: rgba(255,204,0,0.35); }
+.bed-tile.pred { background: rgba(45,156,255,0.2); border-color: rgba(45,156,255,0.4); }
+.bed-tile.boarding { background: rgba(155,114,255,0.2); border-color: rgba(155,114,255,0.4); animation: glow 2s infinite; }
+
+@keyframes glow {
+  0%,100% { box-shadow: 0 0 0 0 rgba(155,114,255,0.3); }
+  50% { box-shadow: 0 0 8px 2px rgba(155,114,255,0.3); }
+}
+
+.bed-id-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; }
+.bed-status-label { font-size: 8px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+
+.bed-legend {
+  display: flex;
+  gap: 16px;
+  padding: 10px 18px;
+  border-top: 1px solid var(--border);
+}
+
+.legend-item { display: flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+/* ── ALERTS PANEL ── */
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.alert-row:last-child { border-bottom: none; }
+.alert-row:hover { background: var(--surface2); }
+
+.alert-indicator {
+  width: 4px;
+  border-radius: 2px;
+  align-self: stretch;
+  flex-shrink: 0;
+}
+
+.alert-icon-box {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.alert-content { flex: 1; }
+.alert-title-text { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+.alert-desc { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); }
+.alert-time-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); white-space: nowrap; }
+
+/* ── CROSS UNIT VIEW ── */
+.unit-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+
+.unit-row:last-child { border-bottom: none; }
+.unit-row:hover { background: var(--surface2); }
+
+.unit-name-col { width: 140px; flex-shrink: 0; }
+.unit-name-text { font-size: 12px; font-weight: 600; }
+.unit-sub-text { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); margin-top: 2px; }
+
+.unit-bar-col { flex: 1; }
+.unit-bar-track { height: 8px; background: var(--border); border-radius: 4px; position: relative; }
+.unit-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+.unit-bar-labels { display: flex; justify-content: space-between; margin-top: 3px; font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); }
+
+.unit-stats { display: flex; gap: 12px; flex-shrink: 0; }
+.unit-stat { text-align: center; }
+.unit-stat-val { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; }
+.unit-stat-label { font-family: 'JetBrains Mono', monospace; font-size: 8px; color: var(--text3); text-transform: uppercase; }
+
+.unit-action { flex-shrink: 0; }
+.unit-status-pill { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 3px 10px; border-radius: 8px; }
+.pill-critical { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,61,90,0.25); }
+.pill-warning { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(255,204,0,0.25); }
+.pill-ok { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,214,143,0.25); }
+
+/* ── REVENUE PANEL ── */
+.revenue-hero {
+  background: linear-gradient(135deg, rgba(0,229,229,0.06), rgba(0,214,143,0.04));
+  border: 1px solid rgba(0,229,229,0.15);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 20px;
+  align-items: center;
+}
+
+.rev-main { }
+.rev-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--cyan); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+.rev-amount { font-family: 'JetBrains Mono', monospace; font-size: 42px; font-weight: 700; color: var(--green); line-height: 1; }
+.rev-sub { font-size: 12px; color: var(--text3); margin-top: 6px; }
+.rev-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.rev-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--surface2); border-radius: 8px; border: 1px solid var(--border); }
+.rev-row-label { font-size: 11px; color: var(--text2); }
+.rev-row-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text); }
+.rev-metrics { display: flex; flex-direction: column; gap: 8px; }
+.rev-metric { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.rev-metric-val { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; }
+.rev-metric-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+/* ── MINI CHARTS ── */
+.mini-bars { display: flex; flex-direction: column; gap: 8px; }
+.mini-bar-row { display: flex; align-items: center; gap: 10px; }
+.mini-bar-label { font-size: 11px; color: var(--text2); width: 110px; flex-shrink: 0; }
+.mini-bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; }
+.mini-bar-fill { height: 100%; border-radius: 3px; }
+.mini-bar-val { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text); width: 36px; text-align: right; flex-shrink: 0; }
+
+/* ── STAFFING ── */
+.staffing-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 18px; border-bottom: 1px solid var(--border); }
+.staffing-row:last-child { border-bottom: none; }
+.staff-name { font-size: 12px; font-weight: 600; }
+.staff-role { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); margin-top: 2px; }
+.staff-load { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.staff-status { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 8px; border-radius: 6px; }
+
+/* ── CNO VIEW ── */
+.cno-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.cno-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.cno-kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.cno-kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; line-height: 1; }
+.cno-kpi-trend { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 6px; }
+
+/* ── PATIENT TABLE ── */
+.patient-table { width: 100%; border-collapse: collapse; }
+.patient-table th { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; padding: 10px 18px; text-align: left; border-bottom: 1px solid var(--border); background: var(--surface2); }
+.patient-table td { padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 12px; vertical-align: middle; }
+.patient-table tr:last-child td { border-bottom: none; }
+.patient-table tr:hover td { background: var(--surface2); cursor: pointer; }
+.pt-name { font-weight: 600; font-size: 13px; }
+.pt-sub { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); margin-top: 2px; }
+.pt-bed { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan); font-weight: 700; }
+.pt-los { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.blocker-list { display: flex; gap: 5px; flex-wrap: wrap; }
+.pt-dc-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 6px; }
+.report-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+.report-kpi { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.report-kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.report-kpi-val { font-family: 'JetBrains Mono', monospace; font-size: 26px; font-weight: 700; line-height: 1; }
+.report-kpi-trend { font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-top: 5px; }
+.trend-chart { display: flex; align-items: flex-end; gap: 3px; height: 36px; margin-top: 8px; }
+.trend-bar { flex: 1; border-radius: 2px 2px 0 0; }
+
+/* ── MODAL OVERLAY ── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 18px;
+  padding: 28px;
+  width: 480px;
+  max-width: 90vw;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from{opacity:0;transform:scale(0.96)} to{opacity:1;transform:scale(1)} }
+.modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.modal-title-text { font-size: 18px; font-weight: 800; }
+.modal-sub-text { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 4px; }
+.modal-close { background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; cursor: pointer; color: var(--text3); font-size: 14px; }
+.modal-match { background: var(--surface); border: 1px solid rgba(0,214,143,0.3); border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+.modal-match-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.modal-bed-label { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--green); }
+.modal-eta-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
+.modal-match-detail { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.modal-match-detail strong { color: var(--text); }
+.modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+.modal-cancel { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border2); color: var(--text3); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; }
+.modal-confirm { flex: 2; padding: 12px; background: var(--green-dim); border: 1px solid rgba(0,214,143,0.4); color: var(--green); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+.modal-confirm:hover { background: rgba(0,214,143,0.2); }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo-mark">
+    <div class="logo-icon">⊕</div>
+    <div>
+      <div class="logo-text">HELIO-OPS</div>
+      <div class="logo-sub">Hospital Intelligence Platform</div>
+    </div>
+  </div>
+
+  <div class="topbar-center">
+    <button class="role-btn active" id="roleBtn-nurse" onclick="switchRole('nurse')">CHARGE NURSE</button>
+    <button class="role-btn" id="roleBtn-coordinator" onclick="switchRole('coordinator')">BED COORDINATOR</button>
+    <button class="role-btn" id="roleBtn-cno" onclick="switchRole('cno')">CNO / COO</button>
+  </div>
+
+  <div class="topbar-right">
+    <div class="hospital-badge">CITY GENERAL HOSPITAL</div>
+    <div class="live-pill"><div class="live-dot"></div>LIVE</div>
+    <div class="time-display" id="clock">09:41 AM</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-section">Overview</div>
+    <div class="sidebar-item active" id="sb-alerts"><span class="sidebar-icon">⚡</span>Active Alerts<span class="sidebar-badge">4</span></div>
+    <div class="sidebar-item" id="sb-discharge"><span class="sidebar-icon">🔮</span>AI Discharge<span class="sidebar-badge green">7</span></div>
+    <div class="sidebar-item" id="sb-beds"><span class="sidebar-icon">🗺</span>Bed Map</div>
+
+    <div class="sidebar-section">Operations</div>
+    <div class="sidebar-item" id="sb-units"><span class="sidebar-icon">🏥</span>All Units</div>
+    <div class="sidebar-item" id="sb-patients"><span class="sidebar-icon">👥</span>Patients</div>
+    <div class="sidebar-item" id="sb-staffing"><span class="sidebar-icon">👩‍⚕️</span>Staffing</div>
+
+    <div class="sidebar-section">Analytics</div>
+    <div class="sidebar-item" id="sb-revenue"><span class="sidebar-icon">💰</span>Revenue Impact</div>
+    <div class="sidebar-item" id="sb-reports"><span class="sidebar-icon">📊</span>Reports</div>
+  </div>
+
+  <!-- CONTENT AREA -->
+  <div class="content">
+
+    <!-- ══════════════════════════════════════════
+         VIEW: CHARGE NURSE (DEFAULT)
+    ═══════════════════════════════════════════ -->
+    <div class="view active" id="view-nurse">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">Unit 4B — Medical / Surgical</div>
+          <div class="page-sub">28 Beds · Floor 4 · North Wing · Updated 2 min ago</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-ghost">Export Shift Report</button>
+          <button class="btn-primary" onclick="showAssignModal()">+ Assign Bed</button>
+        </div>
+      </div>
+
+      <!-- STAT STRIP -->
+      <div class="stat-strip">
+        <div class="stat-tile red">
+          <div class="stat-tile-label">Occupied Beds</div>
+          <div class="stat-tile-value" style="color:var(--red)">21</div>
+          <div class="stat-tile-sub">of 28 total</div>
+          <div class="stat-tile-trend trend-neutral">75% utilization</div>
+        </div>
+        <div class="stat-tile green">
+          <div class="stat-tile-label">Available Now</div>
+          <div class="stat-tile-value" style="color:var(--green)">4</div>
+          <div class="stat-tile-sub">ready to admit</div>
+          <div class="stat-tile-trend trend-up">↑ 1 since last hour</div>
+        </div>
+        <div class="stat-tile blue">
+          <div class="stat-tile-label">Predicted Free</div>
+          <div class="stat-tile-value" style="color:var(--blue)">7</div>
+          <div class="stat-tile-sub">within 4 hours</div>
+          <div class="stat-tile-trend trend-up">AI confidence: high</div>
+        </div>
+        <div class="stat-tile yellow">
+          <div class="stat-tile-label">Boarding Wait</div>
+          <div class="stat-tile-value" style="color:var(--yellow)">2</div>
+          <div class="stat-tile-sub">ED patients waiting</div>
+          <div class="stat-tile-trend trend-down">↑ 4h avg wait</div>
+        </div>
+        <div class="stat-tile cyan">
+          <div class="stat-tile-label">DC by Noon</div>
+          <div class="stat-tile-value" style="color:var(--cyan)">4</div>
+          <div class="stat-tile-sub">on track today</div>
+          <div class="stat-tile-trend trend-up">↑ 2 ahead of schedule</div>
+        </div>
+      </div>
+
+      <div class="grid-60-40">
+
+        <!-- AI DISCHARGE PREDICTIONS -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">🔮 AI Discharge Predictions — Next 4 Hours</span>
+            <span class="panel-badge badge-blue">7 predicted</span>
+          </div>
+
+          <div class="discharge-row">
+            <div class="dc-confidence conf-high">87%</div>
+            <div class="dc-info">
+              <div class="dc-name">J. Martinez, 67M — Cardiology</div>
+              <div class="dc-meta">BED 4B-03 · Dr. Patel · LOS Day 4</div>
+              <div class="dc-blockers">
+                <span class="blocker-tag blocker-ok">✓ CHART</span>
+                <span class="blocker-tag blocker-ok">✓ LABS</span>
+                <span class="blocker-tag blocker-ok">✓ TRANSPORT</span>
+                <span class="blocker-tag blocker-ok">✓ SCRIPTS</span>
+              </div>
+            </div>
+            <div class="dc-eta"><div class="eta-time">~90 min</div><div class="eta-label">ETA</div></div>
+            <div class="dc-action"><button class="action-btn btn-ready">PREP BED</button></div>
+          </div>
+
+          <div class="discharge-row">
+            <div class="dc-confidence conf-high">82%</div>
+            <div class="dc-info">
+              <div class="dc-name">P. Williams, 58F — Med/Surg</div>
+              <div class="dc-meta">BED 4B-11 · Dr. Chen · LOS Day 3</div>
+              <div class="dc-blockers">
+                <span class="blocker-tag blocker-ok">✓ CHART</span>
+                <span class="blocker-tag blocker-pend">⏳ LABS 2PM</span>
+                <span class="blocker-tag blocker-ok">✓ TRANSPORT</span>
+              </div>
+            </div>
+            <div class="dc-eta"><div class="eta-time">~2.5 hrs</div><div class="eta-label">ETA</div></div>
+            <div class="dc-action"><button class="action-btn btn-prep">EXPEDITE LABS</button></div>
+          </div>
+
+          <div class="discharge-row">
+            <div class="dc-confidence conf-med">71%</div>
+            <div class="dc-info">
+              <div class="dc-name">M. Johnson, 61M — Med/Surg</div>
+              <div class="dc-meta">BED 4B-14 · Dr. Chen · LOS Day 3</div>
+              <div class="dc-blockers">
+                <span class="blocker-tag blocker-ok">✓ CHART</span>
+                <span class="blocker-tag blocker-warn">⚠ HOME HEALTH</span>
+                <span class="blocker-tag blocker-pend">⏳ FINAL LABS</span>
+              </div>
+            </div>
+            <div class="dc-eta"><div class="eta-time">~3 hrs</div><div class="eta-label">ETA</div></div>
+            <div class="dc-action"><button class="action-btn btn-expedite">EXPEDITE</button></div>
+          </div>
+
+          <div class="discharge-row">
+            <div class="dc-confidence conf-med">65%</div>
+            <div class="dc-info">
+              <div class="dc-name">L. Garcia, 74F — Pulmonology</div>
+              <div class="dc-meta">BED 4B-22 · Dr. Lee · LOS Day 5</div>
+              <div class="dc-blockers">
+                <span class="blocker-tag blocker-warn">⚠ SNF PLACEMENT</span>
+                <span class="blocker-tag blocker-warn">⚠ PT EVAL</span>
+              </div>
+            </div>
+            <div class="dc-eta"><div class="eta-time">~4 hrs</div><div class="eta-label">ETA</div></div>
+            <div class="dc-action"><button class="action-btn btn-expedite">ESCALATE</button></div>
+          </div>
+
+          <div class="discharge-row">
+            <div class="dc-confidence conf-low">54%</div>
+            <div class="dc-info">
+              <div class="dc-name">R. Thompson, 54F — Med/Surg</div>
+              <div class="dc-meta">BED 4B-19 · Dr. Kim · LOS Day 7 ⚠ EXTENDED</div>
+              <div class="dc-blockers">
+                <span class="blocker-tag blocker-warn">⚠ SNF PENDING</span>
+                <span class="blocker-tag blocker-warn">⚠ INSURANCE AUTH</span>
+                <span class="blocker-tag blocker-warn">⚠ FAMILY CONSULT</span>
+              </div>
+            </div>
+            <div class="dc-eta"><div class="eta-time">TBD</div><div class="eta-label">BLOCKERS</div></div>
+            <div class="dc-action"><button class="action-btn btn-expedite">REVIEW</button></div>
+          </div>
+
+        </div>
+
+        <!-- RIGHT COLUMN -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+          <!-- ACTIVE ALERTS -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">⚡ Active Alerts</span>
+              <span class="panel-badge badge-red">4 urgent</span>
+            </div>
+            <div class="alert-row">
+              <div class="alert-indicator" style="background:var(--red)"></div>
+              <div class="alert-icon-box" style="background:var(--red-dim)">🚨</div>
+              <div class="alert-content">
+                <div class="alert-title-text">Boarding — ED Wait 4h+</div>
+                <div class="alert-desc">BED 4B-12 · Patient since 05:30</div>
+              </div>
+              <button class="action-btn btn-assign-sm" onclick="showAssignModal()">ASSIGN</button>
+            </div>
+            <div class="alert-row">
+              <div class="alert-indicator" style="background:var(--green)"></div>
+              <div class="alert-icon-box" style="background:var(--green-dim)">✅</div>
+              <div class="alert-content">
+                <div class="alert-title-text">Discharge Complete</div>
+                <div class="alert-desc">BED 4B-07 · Cleaning in progress</div>
+              </div>
+              <button class="action-btn btn-ready">CONFIRM</button>
+            </div>
+            <div class="alert-row">
+              <div class="alert-indicator" style="background:var(--yellow)"></div>
+              <div class="alert-icon-box" style="background:var(--yellow-dim)">⚠️</div>
+              <div class="alert-content">
+                <div class="alert-title-text">Extended LOS — Day 7</div>
+                <div class="alert-desc">4B-19 · Exceeds avg by 3 days</div>
+              </div>
+              <button class="action-btn btn-expedite">REVIEW</button>
+            </div>
+            <div class="alert-row">
+              <div class="alert-indicator" style="background:var(--purple)"></div>
+              <div class="alert-icon-box" style="background:rgba(155,114,255,0.12)">🔄</div>
+              <div class="alert-content">
+                <div class="alert-title-text">Transfer Request — ICU Step-Down</div>
+                <div class="alert-desc">Patient needs step-down bed · ICU Unit 2</div>
+              </div>
+              <button class="action-btn btn-prep">REVIEW</button>
+            </div>
+          </div>
+
+          <!-- STAFFING RATIOS -->
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">👩‍⚕️ Nurse Ratios — Unit 4B</span>
+              <span class="panel-badge badge-yellow">1 at limit</span>
+            </div>
+            <div class="staffing-row">
+              <div><div class="staff-name">Sarah K.</div><div class="staff-role">RN · SHIFT A</div></div>
+              <div class="staff-load" style="color:var(--green)">1:4</div>
+              <div class="staff-status" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(0,214,143,0.25)">OK</div>
+            </div>
+            <div class="staffing-row">
+              <div><div class="staff-name">Marcus T.</div><div class="staff-role">RN · SHIFT A</div></div>
+              <div class="staff-load" style="color:var(--yellow)">1:5</div>
+              <div class="staff-status" style="background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,204,0,0.25)">AT LIMIT</div>
+            </div>
+            <div class="staffing-row">
+              <div><div class="staff-name">Priya M.</div><div class="staff-role">RN · SHIFT A</div></div>
+              <div class="staff-load" style="color:var(--green)">1:4</div>
+              <div class="staff-status" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(0,214,143,0.25)">OK</div>
+            </div>
+            <div class="staffing-row">
+              <div><div class="staff-name">James R.</div><div class="staff-role">CNA · SHIFT A</div></div>
+              <div class="staff-load" style="color:var(--green)">8 pts</div>
+              <div class="staff-status" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(0,214,143,0.25)">OK</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- BED MAP -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">🗺 Unit 4B Bed Map — Real Time</span>
+          <div style="display:flex;gap:8px;">
+            <span class="panel-badge badge-green">4 free</span>
+            <span class="panel-badge badge-red">2 boarding</span>
+          </div>
+        </div>
+        <div class="bed-grid-desktop">
+          <div class="bed-tile occ"><div class="bed-id-label">4B-01</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-02</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile pred"><div class="bed-id-label">4B-03</div><div class="bed-status-label">~90M</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-04</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile free"><div class="bed-id-label">4B-05</div><div class="bed-status-label">FREE</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-06</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-07</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile clean"><div class="bed-id-label">4B-08</div><div class="bed-status-label">CLEAN</div></div>
+          <div class="bed-tile free"><div class="bed-id-label">4B-09</div><div class="bed-status-label">FREE</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-10</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile pred"><div class="bed-id-label">4B-11</div><div class="bed-status-label">~2.5H</div></div>
+          <div class="bed-tile boarding"><div class="bed-id-label">4B-12</div><div class="bed-status-label">BOARD</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-13</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile pred"><div class="bed-id-label">4B-14</div><div class="bed-status-label">~3H</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-15</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-16</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-17</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-18</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-19</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-20</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile free"><div class="bed-id-label">4B-21</div><div class="bed-status-label">FREE</div></div>
+          <div class="bed-tile pred"><div class="bed-id-label">4B-22</div><div class="bed-status-label">~4H</div></div>
+          <div class="bed-tile clean"><div class="bed-id-label">4B-23</div><div class="bed-status-label">CLEAN</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-24</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile free"><div class="bed-id-label">4B-25</div><div class="bed-status-label">FREE</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-26</div><div class="bed-status-label">OCC</div></div>
+          <div class="bed-tile boarding"><div class="bed-id-label">4B-27</div><div class="bed-status-label">BOARD</div></div>
+          <div class="bed-tile occ"><div class="bed-id-label">4B-28</div><div class="bed-status-label">OCC</div></div>
+        </div>
+        <div class="bed-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(255,61,90,0.5)"></div>Occupied</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(0,214,143,0.5)"></div>Available</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(255,204,0,0.5)"></div>Cleaning</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(45,156,255,0.5)"></div>Predicted Discharge</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(155,114,255,0.5)"></div>Boarding Patient</div>
+        </div>
+      </div>
+
+    </div><!-- end view-nurse -->
+
+    <!-- ══════════════════════════════════════════
+         VIEW: BED COORDINATOR
+    ═══════════════════════════════════════════ -->
+    <div class="view" id="view-coordinator">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">Cross-Unit Capacity</div>
+          <div class="page-sub">City General Hospital · All Units · Real Time</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-ghost">Transfer Queue</button>
+          <button class="btn-primary">+ Manual Override</button>
+        </div>
+      </div>
+
+      <div class="stat-strip">
+        <div class="stat-tile red"><div class="stat-tile-label">Total Occupied</div><div class="stat-tile-value" style="color:var(--red)">187</div><div class="stat-tile-sub">of 240 beds</div><div class="stat-tile-trend trend-neutral">78% system utilization</div></div>
+        <div class="stat-tile green"><div class="stat-tile-label">Available Now</div><div class="stat-tile-value" style="color:var(--green)">24</div><div class="stat-tile-sub">across all units</div><div class="stat-tile-trend trend-up">↑ 6 vs. 2hrs ago</div></div>
+        <div class="stat-tile blue"><div class="stat-tile-label">Predicted Free</div><div class="stat-tile-value" style="color:var(--blue)">31</div><div class="stat-tile-sub">within 4 hours</div><div class="stat-tile-trend trend-up">AI-projected</div></div>
+        <div class="stat-tile yellow"><div class="stat-tile-label">ED Boarders</div><div class="stat-tile-value" style="color:var(--yellow)">7</div><div class="stat-tile-sub">waiting for beds</div><div class="stat-tile-trend trend-down">↑ avg 3.2hr wait</div></div>
+        <div class="stat-tile cyan"><div class="stat-tile-label">Pending Transfers</div><div class="stat-tile-value" style="color:var(--cyan)">4</div><div class="stat-tile-sub">awaiting placement</div><div class="stat-tile-trend trend-neutral">2 ICU step-downs</div></div>
+      </div>
+
+      <!-- CROSS UNIT TABLE -->
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-header">
+          <span class="panel-title">🏥 All Units — Capacity Overview</span>
+          <span class="panel-badge badge-blue">8 units</span>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">4B Med/Surg</div><div class="unit-sub-text">28 beds · Floor 4</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:75%;background:var(--yellow)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>75% utilized</span><span>28</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--green)">4</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">7</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--red)">2</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-warning">NEAR CAPACITY</span></div>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">5A Cardiology</div><div class="unit-sub-text">32 beds · Floor 5</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:94%;background:var(--red)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>94% utilized</span><span>32</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--red)">2</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">3</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--red)">3</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-critical">CRITICAL</span></div>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">3C ICU</div><div class="unit-sub-text">16 beds · Floor 3</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:88%;background:var(--red)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>88% utilized</span><span>16</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--yellow)">2</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">4</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--yellow)">1</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-warning">NEAR CAPACITY</span></div>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">6A Orthopedics</div><div class="unit-sub-text">24 beds · Floor 6</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:58%;background:var(--green)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>58% utilized</span><span>24</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--green)">10</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">5</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--green)">0</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-ok">AVAILABLE</span></div>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">2B Neurology</div><div class="unit-sub-text">20 beds · Floor 2</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:70%;background:var(--yellow)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>70% utilized</span><span>20</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--green)">6</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">4</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--green)">0</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-ok">AVAILABLE</span></div>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">7A Oncology</div><div class="unit-sub-text">28 beds · Floor 7</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:82%;background:var(--yellow)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>82% utilized</span><span>28</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--yellow)">5</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">6</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--yellow)">1</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-warning">NEAR CAPACITY</span></div>
+        </div>
+
+        <div class="unit-row">
+          <div class="unit-name-col"><div class="unit-name-text">1A Emergency</div><div class="unit-sub-text">40 beds · Floor 1</div></div>
+          <div class="unit-bar-col">
+            <div class="unit-bar-track"><div class="unit-bar-fill" style="width:95%;background:var(--red)"></div></div>
+            <div class="unit-bar-labels"><span>0</span><span>95% utilized</span><span>40</span></div>
+          </div>
+          <div class="unit-stats">
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--red)">2</div><div class="unit-stat-label">Free</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--blue)">2</div><div class="unit-stat-label">Predicted</div></div>
+            <div class="unit-stat"><div class="unit-stat-val" style="color:var(--red)">7</div><div class="unit-stat-label">Boarding</div></div>
+          </div>
+          <div class="unit-action"><span class="unit-status-pill pill-critical">CRITICAL</span></div>
+        </div>
+
+      </div>
+
+    </div><!-- end view-coordinator -->
+
+    <!-- ══════════════════════════════════════════
+         VIEW: CNO / COO
+    ═══════════════════════════════════════════ -->
+    <div class="view" id="view-cno">
+
+      <div class="page-header">
+        <div>
+          <div class="page-title">Executive Dashboard</div>
+          <div class="page-sub">City General Hospital · Today · Feb 24, 2026</div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-ghost">Export Board Report</button>
+          <button class="btn-primary">Download PDF</button>
+        </div>
+      </div>
+
+      <!-- REVENUE HERO -->
+      <div class="revenue-hero">
+        <div class="rev-main">
+          <div class="rev-label">💰 Revenue Unlocked Today</div>
+          <div class="rev-amount">$284,600</div>
+          <div class="rev-sub">vs. $198,400 same day last week · +43%</div>
+          <div style="margin-top:12px;">
+            <div class="rev-label" style="margin-bottom:6px;">Powered by HELIO-OPS AI</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.7;">
+              Beds recovered via early discharge predictions<br>
+              Boarding hours eliminated through smart matching<br>
+              LOS reduction through blocker resolution
+            </div>
+          </div>
+        </div>
+        <div class="rev-breakdown">
+          <div class="rev-row"><span class="rev-row-label">Beds recovered today</span><strong class="rev-row-val" style="color:var(--green)">+11 beds</strong></div>
+          <div class="rev-row"><span class="rev-row-label">Avg revenue per bed/day</span><strong class="rev-row-val">$2,800</strong></div>
+          <div class="rev-row"><span class="rev-row-label">ED boarding hours avoided</span><strong class="rev-row-val" style="color:var(--cyan)">47 hrs</strong></div>
+          <div class="rev-row"><span class="rev-row-label">LOS reduction vs. baseline</span><strong class="rev-row-val" style="color:var(--blue)">-0.8 days</strong></div>
+          <div class="rev-row"><span class="rev-row-label">Discharge before noon rate</span><strong class="rev-row-val" style="color:var(--yellow)">68%</strong></div>
+          <div class="rev-row"><span class="rev-row-label">Projected monthly impact</span><strong class="rev-row-val" style="color:var(--green)">$3.4M</strong></div>
+        </div>
+        <div class="rev-metrics">
+          <div class="rev-metric"><div class="rev-metric-val" style="color:var(--cyan)">82%</div><div class="rev-metric-label">System Utilization</div></div>
+          <div class="rev-metric"><div class="rev-metric-val" style="color:var(--green)">3.8d</div><div class="rev-metric-label">Avg LOS</div></div>
+          <div class="rev-metric"><div class="rev-metric-val" style="color:var(--blue)">1.2h</div><div class="rev-metric-label">Avg Boarding Time</div></div>
+          <div class="rev-metric"><div class="rev-metric-val" style="color:var(--yellow)">94%</div><div class="rev-metric-label">Nurse Satisfaction</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+
+        <!-- DISCHARGE BLOCKER ANALYSIS -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Top Discharge Blockers — Today</span>
+            <span class="panel-badge badge-red">14 blocked</span>
+          </div>
+          <div class="panel-body">
+            <div class="mini-bars">
+              <div class="mini-bar-row"><span class="mini-bar-label">SNF Placement</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:60%;background:var(--red)"></div></div><span class="mini-bar-val">5 pts</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">Labs Pending</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:48%;background:var(--yellow)"></div></div><span class="mini-bar-val">4 pts</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">Insurance Auth</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:36%;background:var(--blue)"></div></div><span class="mini-bar-val">3 pts</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">Transport</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:24%;background:var(--purple)"></div></div><span class="mini-bar-val">2 pts</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">Chart Incomplete</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:12%;background:var(--text3)"></div></div><span class="mini-bar-val">1 pt</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UNIT PERFORMANCE -->
+        <div class="panel">
+          <div class="panel-header">
+            <span class="panel-title">Unit Performance vs. Target</span>
+            <span class="panel-badge badge-cyan">82% avg</span>
+          </div>
+          <div class="panel-body">
+            <div class="mini-bars">
+              <div class="mini-bar-row"><span class="mini-bar-label">6A Ortho</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:58%;background:var(--green)"></div></div><span class="mini-bar-val">58%</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">4B Med/Surg</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:75%;background:var(--yellow)"></div></div><span class="mini-bar-val">75%</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">2B Neuro</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:70%;background:var(--yellow)"></div></div><span class="mini-bar-val">70%</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">7A Onco</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:82%;background:var(--cyan)"></div></div><span class="mini-bar-val">82%</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">5A Cardio</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:94%;background:var(--red)"></div></div><span class="mini-bar-val">94%</span></div>
+              <div class="mini-bar-row"><span class="mini-bar-label">1A Emergency</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:95%;background:var(--red)"></div></div><span class="mini-bar-val">95%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CXO KPIs -->
+      <div class="cno-kpi-grid">
+        <div class="cno-kpi">
+          <div class="cno-kpi-label">30-Day Revenue Impact</div>
+          <div class="cno-kpi-value" style="color:var(--green)">$3.4M</div>
+          <div class="cno-kpi-trend trend-up">↑ 43% vs. pre-HelioOps</div>
+        </div>
+        <div class="cno-kpi">
+          <div class="cno-kpi-label">LOS Reduction</div>
+          <div class="cno-kpi-value" style="color:var(--blue)">-0.8 days</div>
+          <div class="cno-kpi-trend trend-up">↑ from 4.6d baseline</div>
+        </div>
+        <div class="cno-kpi">
+          <div class="cno-kpi-label">Virtual Beds Created</div>
+          <div class="cno-kpi-value" style="color:var(--cyan)">+19</div>
+          <div class="cno-kpi-trend trend-up">No construction needed</div>
+        </div>
+        <div class="cno-kpi">
+          <div class="cno-kpi-label">Nurse Burnout Score</div>
+          <div class="cno-kpi-value" style="color:var(--yellow)">↓ 28%</div>
+          <div class="cno-kpi-trend trend-up">Call volume reduced 60%</div>
+        </div>
+      </div>
+
+    </div><!-- end view-cno -->
+
+  </div><!-- end content -->
+</div><!-- end main -->
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR VIEW: AI DISCHARGE
+═══════════════════════════════════════════ -->
+<div class="view" id="view-sidebar-discharge">
+  <div class="page-header">
+    <div>
+      <div class="page-title">AI Discharge Predictions</div>
+      <div class="page-sub">All Units · Next 8 Hours · Updated 2 min ago</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost">Export List</button>
+      <button class="btn-primary">Bulk Expedite</button>
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat-tile green"><div class="stat-tile-label">High Confidence</div><div class="stat-tile-value" style="color:var(--green)">8</div><div class="stat-tile-sub">≥80% confidence</div></div>
+    <div class="stat-tile yellow"><div class="stat-tile-label">Medium Confidence</div><div class="stat-tile-value" style="color:var(--yellow)">11</div><div class="stat-tile-sub">50–79% confidence</div></div>
+    <div class="stat-tile blue"><div class="stat-tile-label">Low Confidence</div><div class="stat-tile-value" style="color:var(--blue)">6</div><div class="stat-tile-sub">&lt;50% confidence</div></div>
+    <div class="stat-tile red"><div class="stat-tile-label">Blocker Count</div><div class="stat-tile-value" style="color:var(--red)">14</div><div class="stat-tile-sub">active blockers</div></div>
+    <div class="stat-tile cyan"><div class="stat-tile-label">Beds Freeable Today</div><div class="stat-tile-value" style="color:var(--cyan)">19</div><div class="stat-tile-sub">if blockers resolved</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">🔮 All Predicted Discharges — Sorted by Confidence</span>
+      <span class="panel-badge badge-blue">25 patients</span>
+    </div>
+
+    <div class="discharge-row">
+      <div class="dc-confidence conf-high">92%</div>
+      <div class="dc-info"><div class="dc-name">J. Martinez, 67M — Cardiology</div><div class="dc-meta">BED 4B-03 · Dr. Patel · LOS Day 4 · City General</div><div class="dc-blockers"><span class="blocker-tag blocker-ok">✓ CHART</span><span class="blocker-tag blocker-ok">✓ LABS</span><span class="blocker-tag blocker-ok">✓ TRANSPORT</span><span class="blocker-tag blocker-ok">✓ SCRIPTS</span><span class="blocker-tag blocker-ok">✓ FAMILY</span></div></div>
+      <div class="dc-eta"><div class="eta-time">~60 min</div><div class="eta-label">ETA</div></div>
+      <div class="dc-action"><button class="action-btn btn-ready">PREP BED</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-high">87%</div>
+      <div class="dc-info"><div class="dc-name">P. Williams, 58F — Med/Surg</div><div class="dc-meta">BED 4B-11 · Dr. Chen · LOS Day 3</div><div class="dc-blockers"><span class="blocker-tag blocker-ok">✓ CHART</span><span class="blocker-tag blocker-pend">⏳ LABS 2PM</span><span class="blocker-tag blocker-ok">✓ TRANSPORT</span></div></div>
+      <div class="dc-eta"><div class="eta-time">~2.5 hrs</div><div class="eta-label">ETA</div></div>
+      <div class="dc-action"><button class="action-btn btn-prep">EXPEDITE LABS</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-high">83%</div>
+      <div class="dc-info"><div class="dc-name">T. Nguyen, 45M — Orthopedics</div><div class="dc-meta">BED 6A-07 · Dr. Park · LOS Day 2</div><div class="dc-blockers"><span class="blocker-tag blocker-ok">✓ CHART</span><span class="blocker-tag blocker-ok">✓ LABS</span><span class="blocker-tag blocker-pend">⏳ PT CLEARANCE</span></div></div>
+      <div class="dc-eta"><div class="eta-time">~3 hrs</div><div class="eta-label">ETA</div></div>
+      <div class="dc-action"><button class="action-btn btn-prep">CONTACT PT</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-med">71%</div>
+      <div class="dc-info"><div class="dc-name">M. Johnson, 61M — Med/Surg</div><div class="dc-meta">BED 4B-14 · Dr. Chen · LOS Day 3</div><div class="dc-blockers"><span class="blocker-tag blocker-ok">✓ CHART</span><span class="blocker-tag blocker-warn">⚠ HOME HEALTH</span><span class="blocker-tag blocker-pend">⏳ FINAL LABS</span></div></div>
+      <div class="dc-eta"><div class="eta-time">~3 hrs</div><div class="eta-label">ETA</div></div>
+      <div class="dc-action"><button class="action-btn btn-expedite">EXPEDITE</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-med">68%</div>
+      <div class="dc-info"><div class="dc-name">A. Patel, 72F — Neurology</div><div class="dc-meta">BED 2B-09 · Dr. Santos · LOS Day 4</div><div class="dc-blockers"><span class="blocker-tag blocker-warn">⚠ REHAB REFERRAL</span><span class="blocker-tag blocker-pend">⏳ ECHO PENDING</span></div></div>
+      <div class="dc-eta"><div class="eta-time">~4 hrs</div><div class="eta-label">ETA</div></div>
+      <div class="dc-action"><button class="action-btn btn-expedite">ESCALATE</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-med">65%</div>
+      <div class="dc-info"><div class="dc-name">L. Garcia, 74F — Pulmonology</div><div class="dc-meta">BED 4B-22 · Dr. Lee · LOS Day 5</div><div class="dc-blockers"><span class="blocker-tag blocker-warn">⚠ SNF PLACEMENT</span><span class="blocker-tag blocker-warn">⚠ PT EVAL</span></div></div>
+      <div class="dc-eta"><div class="eta-time">~5 hrs</div><div class="eta-label">ETA</div></div>
+      <div class="dc-action"><button class="action-btn btn-expedite">ESCALATE</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-low">54%</div>
+      <div class="dc-info"><div class="dc-name">R. Thompson, 54F — Med/Surg</div><div class="dc-meta">BED 4B-19 · Dr. Kim · LOS Day 7 ⚠ EXTENDED</div><div class="dc-blockers"><span class="blocker-tag blocker-warn">⚠ SNF PENDING</span><span class="blocker-tag blocker-warn">⚠ INSURANCE AUTH</span><span class="blocker-tag blocker-warn">⚠ FAMILY CONSULT</span></div></div>
+      <div class="dc-eta"><div class="eta-time">TBD</div><div class="eta-label">3 BLOCKERS</div></div>
+      <div class="dc-action"><button class="action-btn btn-expedite">REVIEW</button></div>
+    </div>
+    <div class="discharge-row">
+      <div class="dc-confidence conf-low">41%</div>
+      <div class="dc-info"><div class="dc-name">D. Wilson, 81M — Cardiology</div><div class="dc-meta">BED 5A-12 · Dr. Okafor · LOS Day 9 ⚠ EXTENDED</div><div class="dc-blockers"><span class="blocker-tag blocker-warn">⚠ FAMILY DECISION</span><span class="blocker-tag blocker-warn">⚠ HOSPICE CONSULT</span></div></div>
+      <div class="dc-eta"><div class="eta-time">UNKNOWN</div><div class="eta-label">COMPLEX</div></div>
+      <div class="dc-action"><button class="action-btn btn-expedite">CASE MGR</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR VIEW: PATIENTS
+═══════════════════════════════════════════ -->
+<div class="view" id="view-sidebar-patients">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Patient Census</div>
+      <div class="page-sub">Unit 4B · 21 Active Patients · Shift A</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost">Export Census</button>
+      <button class="btn-primary">Filter by Blocker</button>
+    </div>
+  </div>
+
+  <div class="stat-strip">
+    <div class="stat-tile red"><div class="stat-tile-label">Total Patients</div><div class="stat-tile-value" style="color:var(--red)">21</div><div class="stat-tile-sub">Unit 4B active</div></div>
+    <div class="stat-tile yellow"><div class="stat-tile-label">DC Today</div><div class="stat-tile-value" style="color:var(--yellow)">5</div><div class="stat-tile-sub">predicted discharges</div></div>
+    <div class="stat-tile red"><div class="stat-tile-label">With Blockers</div><div class="stat-tile-value" style="color:var(--red)">8</div><div class="stat-tile-sub">need intervention</div></div>
+    <div class="stat-tile blue"><div class="stat-tile-label">Extended LOS</div><div class="stat-tile-value" style="color:var(--blue)">3</div><div class="stat-tile-sub">>5 days</div></div>
+    <div class="stat-tile green"><div class="stat-tile-label">Ready to DC</div><div class="stat-tile-value" style="color:var(--green)">2</div><div class="stat-tile-sub">no blockers</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">👥 Full Patient List — Unit 4B</span>
+      <span class="panel-badge badge-cyan">21 patients</span>
+    </div>
+    <table class="patient-table">
+      <thead>
+        <tr>
+          <th>Patient</th>
+          <th>Bed</th>
+          <th>Service / Physician</th>
+          <th>LOS</th>
+          <th>DC Status</th>
+          <th>Blockers</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="pt-name">J. Martinez, 67M</div><div class="pt-sub">Admitted 02/20</div></td>
+          <td><div class="pt-bed">4B-03</div></td>
+          <td><div style="font-size:12px">Cardiology</div><div class="pt-sub">Dr. Patel</div></td>
+          <td><div class="pt-los" style="color:var(--green)">Day 4</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(0,214,143,0.25)">DC TODAY ✓</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-ok">ALL CLEAR</span></div></td>
+          <td><button class="action-btn btn-ready" style="font-size:9px;padding:5px 10px">PREP</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">P. Williams, 58F</div><div class="pt-sub">Admitted 02/21</div></td>
+          <td><div class="pt-bed">4B-11</div></td>
+          <td><div style="font-size:12px">Med/Surg</div><div class="pt-sub">Dr. Chen</div></td>
+          <td><div class="pt-los" style="color:var(--green)">Day 3</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,204,0,0.25)">DC TODAY</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-pend">⏳ LABS</span></div></td>
+          <td><button class="action-btn btn-prep" style="font-size:9px;padding:5px 10px">EXPEDITE</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">M. Johnson, 61M</div><div class="pt-sub">Admitted 02/21</div></td>
+          <td><div class="pt-bed">4B-14</div></td>
+          <td><div style="font-size:12px">Med/Surg</div><div class="pt-sub">Dr. Chen</div></td>
+          <td><div class="pt-los" style="color:var(--green)">Day 3</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(45,156,255,0.25)">DC TOMORROW</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-warn">⚠ HOME HEALTH</span><span class="blocker-tag blocker-pend">⏳ LABS</span></div></td>
+          <td><button class="action-btn btn-expedite" style="font-size:9px;padding:5px 10px">REVIEW</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">R. Thompson, 54F</div><div class="pt-sub">Admitted 02/17</div></td>
+          <td><div class="pt-bed">4B-19</div></td>
+          <td><div style="font-size:12px">Med/Surg</div><div class="pt-sub">Dr. Kim</div></td>
+          <td><div class="pt-los" style="color:var(--red)">Day 7 ⚠</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--red-dim);color:var(--red);border:1px solid rgba(255,61,90,0.25)">EXTENDED</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-warn">⚠ SNF</span><span class="blocker-tag blocker-warn">⚠ AUTH</span><span class="blocker-tag blocker-warn">⚠ FAMILY</span></div></td>
+          <td><button class="action-btn btn-expedite" style="font-size:9px;padding:5px 10px">ESCALATE</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">L. Garcia, 74F</div><div class="pt-sub">Admitted 02/19</div></td>
+          <td><div class="pt-bed">4B-22</div></td>
+          <td><div style="font-size:12px">Pulmonology</div><div class="pt-sub">Dr. Lee</div></td>
+          <td><div class="pt-los" style="color:var(--yellow)">Day 5</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--yellow-dim);color:var(--yellow);border:1px solid rgba(255,204,0,0.25)">DC TODAY</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-warn">⚠ SNF</span><span class="blocker-tag blocker-warn">⚠ PT EVAL</span></div></td>
+          <td><button class="action-btn btn-expedite" style="font-size:9px;padding:5px 10px">ESCALATE</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">S. Patel, 45F</div><div class="pt-sub">Admitted 02/24</div></td>
+          <td><div class="pt-bed">4B-06</div></td>
+          <td><div style="font-size:12px">Pulmonology</div><div class="pt-sub">Dr. Lee</div></td>
+          <td><div class="pt-los" style="color:var(--cyan)">Day 1</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,229,229,0.25)">ADMITTED</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-ok">MONITORING</span></div></td>
+          <td><button class="action-btn btn-prep" style="font-size:9px;padding:5px 10px">VIEW</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">A. Nguyen, 78M</div><div class="pt-sub">Admitted 02/22</div></td>
+          <td><div class="pt-bed">4B-08</div></td>
+          <td><div style="font-size:12px">Cardiology</div><div class="pt-sub">Dr. Patel</div></td>
+          <td><div class="pt-los" style="color:var(--green)">Day 2</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(45,156,255,0.25)">DC TOMORROW</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-pend">⏳ ECHO</span><span class="blocker-tag blocker-pend">⏳ LABS</span></div></td>
+          <td><button class="action-btn btn-prep" style="font-size:9px;padding:5px 10px">EXPEDITE</button></td>
+        </tr>
+        <tr>
+          <td><div class="pt-name">C. Brooks, 55M</div><div class="pt-sub">Admitted 02/22</div></td>
+          <td><div class="pt-bed">4B-16</div></td>
+          <td><div style="font-size:12px">Med/Surg</div><div class="pt-sub">Dr. Kim</div></td>
+          <td><div class="pt-los" style="color:var(--green)">Day 2</div></td>
+          <td><span class="pt-dc-tag" style="background:var(--blue-dim);color:var(--blue);border:1px solid rgba(45,156,255,0.25)">DC TOMORROW</span></td>
+          <td><div class="blocker-list"><span class="blocker-tag blocker-pend">⏳ CONSULT</span></div></td>
+          <td><button class="action-btn btn-prep" style="font-size:9px;padding:5px 10px">VIEW</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SIDEBAR VIEW: REPORTS
+═══════════════════════════════════════════ -->
+<div class="view" id="view-sidebar-reports">
+  <div class="page-header">
+    <div>
+      <div class="page-title">Shift Summary & Trends</div>
+      <div class="page-sub">Unit 4B · Shift A · Feb 24, 2026 · 07:00 – 19:00</div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-ghost">Email Report</button>
+      <button class="btn-primary">Download PDF</button>
+    </div>
+  </div>
+
+  <div class="report-grid">
+    <div class="report-kpi">
+      <div class="report-kpi-label">Utilization Rate</div>
+      <div class="report-kpi-val" style="color:var(--cyan)">82%</div>
+      <div class="report-kpi-trend trend-up">↑ 7% vs last week</div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:45%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:55%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:50%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:65%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:60%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:72%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:82%;background:var(--cyan)"></div>
+      </div>
+    </div>
+    <div class="report-kpi">
+      <div class="report-kpi-label">Avg Length of Stay</div>
+      <div class="report-kpi-val" style="color:var(--blue)">3.8 days</div>
+      <div class="report-kpi-trend trend-up">↓ 0.6 days vs baseline</div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:90%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:85%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:88%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:80%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:75%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:70%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:63%;background:var(--blue)"></div>
+      </div>
+    </div>
+    <div class="report-kpi">
+      <div class="report-kpi-label">Revenue Unlocked</div>
+      <div class="report-kpi-val" style="color:var(--green)">$84,200</div>
+      <div class="report-kpi-trend trend-up">↑ 37% vs last week</div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:40%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:45%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:50%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:55%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:60%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:70%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:100%;background:var(--green)"></div>
+      </div>
+    </div>
+    <div class="report-kpi">
+      <div class="report-kpi-label">DC Before Noon</div>
+      <div class="report-kpi-val" style="color:var(--yellow)">4 / 6</div>
+      <div class="report-kpi-trend trend-up">67% on-time rate</div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:33%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:50%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:40%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:55%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:60%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:58%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:67%;background:var(--yellow)"></div>
+      </div>
+    </div>
+    <div class="report-kpi">
+      <div class="report-kpi-label">Avg Boarding Time</div>
+      <div class="report-kpi-val" style="color:var(--red)">1.2 hrs</div>
+      <div class="report-kpi-trend trend-up">↓ from 3.8hr avg</div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:100%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:95%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:85%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:70%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:55%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:40%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:32%;background:var(--red)"></div>
+      </div>
+    </div>
+    <div class="report-kpi">
+      <div class="report-kpi-label">Bed Turnover Time</div>
+      <div class="report-kpi-val" style="color:var(--green)">31 min</div>
+      <div class="report-kpi-trend trend-up">↓ from 48min baseline</div>
+      <div class="trend-chart">
+        <div class="trend-bar" style="height:100%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:90%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:80%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:70%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:60%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:65%;background:var(--border2)"></div>
+        <div class="trend-bar" style="height:65%;background:var(--green)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Discharge Blockers — This Shift</span><span class="panel-badge badge-red">14 total</span></div>
+      <div class="panel-body">
+        <div class="mini-bars">
+          <div class="mini-bar-row"><span class="mini-bar-label">SNF Placement</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:60%;background:var(--red)"></div></div><span class="mini-bar-val">5 pts</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Labs Pending</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:48%;background:var(--yellow)"></div></div><span class="mini-bar-val">4 pts</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Insurance Auth</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:36%;background:var(--blue)"></div></div><span class="mini-bar-val">3 pts</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Transport</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:24%;background:var(--purple)"></div></div><span class="mini-bar-val">2 pts</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Chart Incomplete</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:12%;background:var(--text3)"></div></div><span class="mini-bar-val">1 pt</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header"><span class="panel-title">Shift Activity Log</span><span class="panel-badge badge-cyan">Today</span></div>
+      <div style="padding:0;">
+        <div class="alert-row">
+          <div class="alert-indicator" style="background:var(--green)"></div>
+          <div class="alert-content"><div class="alert-title-text">Bed 4B-03 — Discharge completed</div><div class="alert-desc">J. Martinez · All blockers cleared by 08:30</div></div>
+          <div class="alert-time-text">08:47 AM</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-indicator" style="background:var(--cyan)"></div>
+          <div class="alert-content"><div class="alert-title-text">Smart Assignment — 4B-05</div><div class="alert-desc">ED patient matched · Boarding reduced 4.2hrs</div></div>
+          <div class="alert-time-text">09:12 AM</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-indicator" style="background:var(--yellow)"></div>
+          <div class="alert-content"><div class="alert-title-text">Extended LOS Flagged — 4B-19</div><div class="alert-desc">R. Thompson · Day 7 · Case manager notified</div></div>
+          <div class="alert-time-text">09:30 AM</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-indicator" style="background:var(--blue)"></div>
+          <div class="alert-content"><div class="alert-title-text">Predicted Discharge — 4B-11</div><div class="alert-desc">P. Williams · 82% confidence · Labs ordered</div></div>
+          <div class="alert-time-text">09:41 AM</div>
+        </div>
+        <div class="alert-row">
+          <div class="alert-indicator" style="background:var(--red)"></div>
+          <div class="alert-content"><div class="alert-title-text">Boarding Alert — 4B-12</div><div class="alert-desc">ED wait 4h+ · Bed match initiated</div></div>
+          <div class="alert-time-text">09:41 AM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN MODAL -->
+<div class="modal-overlay" id="assignModal" onclick="hideModal(event)">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title-text">Smart Bed Assignment</div>
+        <div class="modal-sub-text">BOARDING PATIENT · ED WAIT 4H+ · PRIORITY: HIGH</div>
+      </div>
+      <button class="modal-close" onclick="hideModal()">✕</button>
+    </div>
+    <div class="modal-match">
+      <div class="modal-match-head">
+        <div class="modal-bed-label">✓ BED 4B-05 — Best Match</div>
+        <div class="modal-eta-label">Ready now · AI score: 97%</div>
+      </div>
+      <div class="modal-match-detail">
+        <strong>Floor 4 · North Wing</strong> · Same service line · Cleaned 8 min ago<br>
+        Nurse ratio after assign: 1:4 → 1:5 (within safe limit)<br>
+        Distance from ED elevator: <strong>2 min</strong>
+      </div>
+    </div>
+    <div class="modal-match" style="border-color:rgba(45,156,255,0.3);opacity:0.75;">
+      <div class="modal-match-head">
+        <div class="modal-bed-label" style="color:var(--blue)">BED 4B-09 — Alt Match</div>
+        <div class="modal-eta-label">~15 min · AI score: 84%</div>
+      </div>
+      <div class="modal-match-detail">
+        <strong>Floor 4 · South Wing</strong> · Cleaning in progress · ETA 15 min<br>
+        Nurse ratio after assign: 1:4 (optimal)
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="hideModal()">Cancel</button>
+      <button class="modal-confirm" onclick="confirmAssign()">✓ Confirm Assign to 4B-05</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    let h = now.getHours(), m = now.getMinutes();
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    document.getElementById('clock').textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+  updateClock();
+  setInterval(updateClock, 10000);
+
+  // Role switcher
+  function switchRole(role) {
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('roleBtn-' + role).classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + role).classList.add('active');
+    document.querySelector('.content').scrollTop = 0;
+  }
+
+  // Sidebar nav
+  const sidebarMap = {
+    'sb-alerts': null,        // shows current role view
+    'sb-discharge': 'sidebar-discharge',
+    'sb-beds': null,          // scrolls to bed map in nurse view
+    'sb-units': 'coordinator',
+    'sb-patients': 'sidebar-patients',
+    'sb-staffing': null,
+    'sb-revenue': 'cno',
+    'sb-reports': 'sidebar-reports'
+  };
+
+  document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.addEventListener('click', function() {
+      document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+      this.classList.add('active');
+
+      const id = this.id;
+      const target = sidebarMap[id];
+
+      if (target === 'coordinator') {
+        switchRole('coordinator');
+      } else if (target === 'cno') {
+        switchRole('cno');
+      } else if (target) {
+        // Show sidebar-specific view
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById('view-' + target).classList.add('active');
+        document.querySelector('.content').scrollTop = 0;
+      } else if (id === 'sb-alerts') {
+        // Return to current role default
+        const activeRole = document.querySelector('.role-btn.active').id.replace('roleBtn-','');
+        switchRole(activeRole);
+      } else if (id === 'sb-beds') {
+        // Scroll to bed map in nurse view
+        switchRole('nurse');
+        setTimeout(() => {
+          const bedMap = document.querySelector('.bed-grid-desktop');
+          if (bedMap) bedMap.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+      }
+    });
+  });
+
+  // Modal
+  function showAssignModal() { document.getElementById('assignModal').classList.add('show'); }
+  function hideModal(e) { if (!e || e.target === document.getElementById('assignModal')) document.getElementById('assignModal').classList.remove('show'); }
+  function confirmAssign() {
+    hideModal();
+    // Update bed tile
+    document.querySelectorAll('.bed-tile').forEach(t => {
+      if (t.querySelector('.bed-id-label')?.textContent === '4B-05') {
+        t.classList.remove('free');
+        t.classList.add('occ');
+        t.querySelector('.bed-status-label').textContent = 'OCC';
+      }
+    });
+    // Update boarding bed
+    document.querySelectorAll('.bed-tile').forEach(t => {
+      if (t.querySelector('.bed-id-label')?.textContent === '4B-12') {
+        t.classList.remove('boarding');
+        t.classList.add('occ');
+        t.querySelector('.bed-status-label').textContent = 'OCC';
+      }
+    });
+  }
+</script>
+</body>
+</html>
