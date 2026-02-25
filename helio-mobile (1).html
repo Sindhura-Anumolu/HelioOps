@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HelioOps Mobile</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0e14; --surface: #111720; --surface2: #161d27; --border: #1e2a38;
+    --cyan: #00d4d4; --green: #00c896; --red: #ff4d6d; --yellow: #f5c842; --blue: #3d9eff;
+    --text: #e2e8f0; --muted: #6b7a8f;
+  }
+  body { background: #060a0f; color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 20px; }
+  .phone-frame { width: 390px; height: 844px; background: var(--bg); border-radius: 44px; border: 2px solid #2a3545; overflow: hidden; box-shadow: 0 0 60px rgba(0,212,212,0.08), 0 0 120px rgba(0,0,0,0.6); position: relative; display: flex; flex-direction: column; }
+  .fixed-header { flex-shrink: 0; }
+  .status-bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px 6px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
+  .top-nav { display: flex; align-items: center; justify-content: space-between; padding: 6px 20px 10px; border-bottom: 1px solid var(--border); }
+  .logo { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--cyan); letter-spacing: 2px; }
+  .live-badge { display: flex; align-items: center; gap: 5px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--green); }
+  .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .unit-header { padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .unit-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+  .unit-meta { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; }
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); }
+  .stat-card { background: var(--surface); padding: 10px 8px; text-align: center; }
+  .stat-value { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+  .stat-label { font-size: 8px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.3; }
+  .stat-bar { height: 2px; border-radius: 1px; margin-top: 5px; background: var(--border); }
+  .stat-bar-fill { height: 100%; border-radius: 1px; }
+  .content-area { flex: 1; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; }
+  .content-area::-webkit-scrollbar { display: none; }
+  .view { display: none; padding-bottom: 16px; }
+  .view.active { display: block; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px 8px; }
+  .section-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  .badge-red { background: rgba(255,77,109,0.15); color: var(--red); font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(255,77,109,0.3); }
+  .badge-blue { background: rgba(61,158,255,0.15); color: var(--blue); font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 7px; border-radius: 10px; border: 1px solid rgba(61,158,255,0.3); }
+
+  /* ALERTS */
+  .alerts { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .alert-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 12px 12px 12px 15px; position: relative; overflow: hidden; }
+  .alert-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; }
+  .alert-card.urgent::before { background: var(--red); }
+  .alert-card.ready::before { background: var(--green); }
+  .alert-card.predicted::before { background: var(--blue); }
+  .alert-card.warning::before { background: var(--yellow); }
+  .alert-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 5px; }
+  .alert-icon-title { display: flex; align-items: center; gap: 8px; }
+  .alert-icon { width: 26px; height: 26px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
+  .urgent .alert-icon { background: rgba(255,77,109,0.15); }
+  .ready .alert-icon { background: rgba(0,200,150,0.15); }
+  .predicted .alert-icon { background: rgba(61,158,255,0.15); }
+  .warning .alert-icon { background: rgba(245,200,66,0.15); }
+  .alert-title { font-size: 12px; font-weight: 600; line-height: 1.2; }
+  .alert-time { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); white-space: nowrap; }
+  .alert-detail { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 8px; line-height: 1.5; }
+  .alert-detail strong { color: var(--cyan); }
+  .alert-action { display: flex; justify-content: flex-end; }
+  .confidence { display: inline-flex; align-items: center; gap: 4px; background: rgba(61,158,255,0.1); color: var(--blue); font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 6px; border-radius: 6px; border: 1px solid rgba(61,158,255,0.2); margin-bottom: 6px; }
+  .btn { padding: 6px 14px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; border: none; cursor: pointer; transition: all 0.15s; }
+  .btn:active { transform: scale(0.95); }
+  .btn-assign { background: rgba(255,77,109,0.2); color: var(--red); border: 1px solid rgba(255,77,109,0.4); }
+  .btn-confirm { background: rgba(0,200,150,0.2); color: var(--green); border: 1px solid rgba(0,200,150,0.4); }
+  .btn-prep { background: rgba(61,158,255,0.2); color: var(--blue); border: 1px solid rgba(61,158,255,0.4); }
+  .btn-review { background: rgba(245,200,66,0.2); color: var(--yellow); border: 1px solid rgba(245,200,66,0.4); }
+
+  /* BEDS */
+  .bed-map-section { padding: 12px 20px; }
+  .bed-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 8px; }
+  .bed-cell { aspect-ratio: 1; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono', monospace; font-size: 7px; font-weight: 600; color: rgba(255,255,255,0.7); cursor: pointer; transition: transform 0.1s; }
+  .bed-cell:active { transform: scale(0.9); }
+  .bed-occ { background: rgba(255,77,109,0.25); border: 1px solid rgba(255,77,109,0.4); }
+  .bed-free { background: rgba(0,200,150,0.3); border: 1px solid rgba(0,200,150,0.5); }
+  .bed-clean { background: rgba(245,200,66,0.2); border: 1px solid rgba(245,200,66,0.4); }
+  .bed-pred { background: rgba(61,158,255,0.25); border: 1px solid rgba(61,158,255,0.5); }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 9px; color: var(--muted); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+  .bed-detail-cards { padding: 0 20px; display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+  .bed-row { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 10px 12px; display: flex; align-items: center; justify-content: space-between; }
+  .bed-row-left { display: flex; align-items: center; gap: 10px; }
+  .bed-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .bed-id { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; }
+  .bed-info { font-size: 10px; color: var(--muted); }
+  .bed-status-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 3px 8px; border-radius: 6px; }
+  .tag-free { background: rgba(0,200,150,0.15); color: var(--green); border: 1px solid rgba(0,200,150,0.3); }
+  .tag-clean { background: rgba(245,200,66,0.15); color: var(--yellow); border: 1px solid rgba(245,200,66,0.3); }
+  .tag-pred { background: rgba(61,158,255,0.15); color: var(--blue); border: 1px solid rgba(61,158,255,0.3); }
+
+  /* PATIENTS */
+  .patient-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+  .patient-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 12px; }
+  .patient-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+  .patient-name { font-size: 13px; font-weight: 600; }
+  .patient-bed { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--cyan); }
+  .patient-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .ptag { font-family: 'JetBrains Mono', monospace; font-size: 9px; padding: 2px 7px; border-radius: 6px; }
+  .ptag-los { background: rgba(245,200,66,0.12); color: var(--yellow); border: 1px solid rgba(245,200,66,0.25); }
+  .ptag-dc { background: rgba(0,200,150,0.12); color: var(--green); border: 1px solid rgba(0,200,150,0.25); }
+  .ptag-labs { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.25); }
+  .ptag-chart { background: rgba(61,158,255,0.12); color: var(--blue); border: 1px solid rgba(61,158,255,0.25); }
+  .patient-blockers { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .patient-blockers strong { color: var(--red); }
+  .patient-blockers .ok { color: var(--green); }
+
+  /* REPORTS */
+  .reports-section { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+  .revenue-highlight { background: linear-gradient(135deg, rgba(0,212,212,0.08), rgba(0,200,150,0.05)); border-radius: 12px; border: 1px solid rgba(0,212,212,0.2); padding: 14px; }
+  .revenue-title { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--cyan); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+  .revenue-amount { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 700; color: var(--green); line-height: 1; }
+  .revenue-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .revenue-breakdown { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+  .rev-row { display: flex; justify-content: space-between; font-size: 10px; }
+  .rev-row span { color: var(--muted); }
+  .rev-row strong { font-family: 'JetBrains Mono', monospace; color: var(--text); }
+  .kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kpi-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 14px; }
+  .kpi-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
+  .kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; line-height: 1; }
+  .kpi-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .kpi-trend { font-size: 10px; margin-top: 4px; }
+  .trend-up { color: var(--green); }
+  .report-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); padding: 14px; }
+  .report-title { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px; }
+  .mini-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .mini-bar-label { font-size: 10px; color: var(--muted); width: 70px; flex-shrink: 0; }
+  .mini-bar-track { flex: 1; height: 6px; background: var(--border); border-radius: 3px; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; }
+  .mini-bar-val { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text); width: 30px; text-align: right; flex-shrink: 0; }
+
+  /* BOTTOM NAV */
+  .bottom-nav { display: flex; justify-content: space-around; padding: 10px 20px 20px; border-top: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; color: var(--muted); cursor: pointer; padding: 4px 12px; border-radius: 10px; transition: all 0.15s; }
+  .nav-item.active { color: var(--cyan); background: rgba(0,212,212,0.08); }
+  .nav-item:active { transform: scale(0.92); }
+  .nav-icon { font-size: 17px; }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: absolute; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: flex-end; justify-content: center; backdrop-filter: blur(4px); }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--surface2); border-radius: 20px 20px 0 0; border: 1px solid var(--border); border-bottom: none; padding: 20px; width: 100%; animation: slideUp 0.25s ease; }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 16px; }
+  .modal-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .modal-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 16px; }
+  .match-card { background: var(--surface); border-radius: 12px; border: 1px solid rgba(0,200,150,0.3); padding: 12px; margin-bottom: 10px; }
+  .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .match-bed { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--green); }
+  .match-eta { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+  .match-detail { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .match-detail strong { color: var(--text); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 14px; }
+  .btn-cancel { flex: 1; padding: 12px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; cursor: pointer; }
+  .btn-confirm-assign { flex: 2; padding: 12px; background: rgba(0,200,150,0.2); border: 1px solid rgba(0,200,150,0.5); color: var(--green); border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="phone-frame">
+  <div class="fixed-header">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span style="color:var(--cyan);font-weight:700;letter-spacing:1px">HELIO-OPS</span>
+      <span>⚡ 87%</span>
+    </div>
+    <div class="top-nav">
+      <div class="logo">⊕ HELIO-OPS</div>
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    </div>
+    <div class="unit-header">
+      <div class="unit-name">4B Medical / Surgical</div>
+      <div class="unit-meta">28 BEDS · FLOOR 4 · NORTH WING · Updated 2 min ago</div>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--red)">21</div>
+        <div class="stat-label">Occupied</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:75%;background:var(--red)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--green)">4</div>
+        <div class="stat-label">Available</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:30%;background:var(--green)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--blue)">3</div>
+        <div class="stat-label">Predicted</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:40%;background:var(--blue)"></div></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" style="color:var(--yellow)">2</div>
+        <div class="stat-label">Cleaning</div>
+        <div class="stat-bar"><div class="stat-bar-fill" style="width:20%;background:var(--yellow)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ALERTS TAB -->
+    <div class="view active" id="view-alerts">
+      <div class="section-header">
+        <span class="section-title">⚡ Active Alerts</span>
+        <span class="badge-red">4 alerts</span>
+      </div>
+      <div class="alerts">
+        <div class="alert-card urgent">
+          <div class="alert-top">
+            <div class="alert-icon-title"><div class="alert-icon">🚨</div><div class="alert-title">Boarding Patient — ED Wait 4h+</div></div>
+            <div class="alert-time">9:41 AM</div>
+          </div>
+          <div class="alert-detail"><strong>BED 4B-12</strong> · Patient ready for admit from ED since 05:30</div>
+          <div class="alert-action"><button class="btn btn-assign" onclick="showModal()">ASSIGN</button></div>
+        </div>
+        <div class="alert-card ready">
+          <div class="alert-top">
+            <div class="alert-icon-title"><div class="alert-icon">✅</div><div class="alert-title">Discharge Complete — Bed Ready</div></div>
+            <div class="alert-time">9:38 AM</div>
+          </div>
+          <div class="alert-detail"><strong>BED 4B-07</strong> · Patient discharged. Cleaning in progress.</div>
+          <div class="alert-action"><button class="btn btn-confirm">CONFIRM</button></div>
+        </div>
+        <div class="alert-card predicted">
+          <div class="alert-top">
+            <div class="alert-icon-title"><div class="alert-icon">🔮</div><div class="alert-title">Predicted Discharge in ~90 min</div></div>
+            <div class="alert-time">Predicted</div>
+          </div>
+          <div class="confidence">● 87% confidence · Dr. Patel</div>
+          <div class="alert-detail"><strong>BED 4B-03</strong> · LOS Day 4 · Chart complete · Labs cleared</div>
+          <div class="alert-action"><button class="btn btn-prep">PREP</button></div>
+        </div>
+        <div class="alert-card warning">
+          <div class="alert-top">
+            <div class="alert-icon-title"><div class="alert-icon">⚠️</div><div class="alert-title">Extended LOS — Day 7</div></div>
+            <div class="alert-time">Today</div>
+          </div>
+          <div class="alert-detail"><strong>BED 4B-19</strong> · Exceeds avg LOS by 3 days · Review needed</div>
+          <div class="alert-action"><button class="btn btn-review">REVIEW</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEDS TAB -->
+    <div class="view" id="view-beds">
+      <div class="bed-map-section">
+        <div class="section-title">🗺 Unit 4B Bed Map</div>
+        <div class="bed-grid">
+          <div class="bed-cell bed-occ">4B-01</div><div class="bed-cell bed-occ">4B-02</div>
+          <div class="bed-cell bed-pred">4B-03</div><div class="bed-cell bed-occ">4B-04</div>
+          <div class="bed-cell bed-free">4B-05</div><div class="bed-cell bed-occ">4B-06</div>
+          <div class="bed-cell bed-occ">4B-07</div><div class="bed-cell bed-occ">4B-08</div>
+          <div class="bed-cell bed-free">4B-09</div><div class="bed-cell bed-occ">4B-10</div>
+          <div class="bed-cell bed-occ">4B-11</div><div class="bed-cell bed-occ">4B-12</div>
+          <div class="bed-cell bed-pred">4B-13</div><div class="bed-cell bed-occ">4B-14</div>
+          <div class="bed-cell bed-clean">4B-15</div><div class="bed-cell bed-occ">4B-16</div>
+          <div class="bed-cell bed-occ">4B-17</div><div class="bed-cell bed-occ">4B-18</div>
+          <div class="bed-cell bed-free">4B-19</div><div class="bed-cell bed-occ">4B-20</div>
+          <div class="bed-cell bed-occ">4B-21</div><div class="bed-cell bed-clean">4B-22</div>
+          <div class="bed-cell bed-occ">4B-23</div><div class="bed-cell bed-occ">4B-24</div>
+          <div class="bed-cell bed-free">4B-25</div><div class="bed-cell bed-occ">4B-26</div>
+          <div class="bed-cell bed-pred">4B-27</div><div class="bed-cell bed-occ">4B-28</div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(255,77,109,0.6)"></div>Occupied</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(0,200,150,0.6)"></div>Available</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(245,200,66,0.6)"></div>Cleaning</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(61,158,255,0.6)"></div>Predicted</div>
+        </div>
+      </div>
+      <div class="section-header">
+        <span class="section-title">Available & Incoming</span>
+        <span class="badge-blue">7 beds</span>
+      </div>
+      <div class="bed-detail-cards">
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--green)"></div><div><div class="bed-id">4B-05</div><div class="bed-info">North Wing · Cleaned 8 min ago</div></div></div><span class="bed-status-tag tag-free">READY</span></div>
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--green)"></div><div><div class="bed-id">4B-09</div><div class="bed-info">South Wing · Available now</div></div></div><span class="bed-status-tag tag-free">READY</span></div>
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--green)"></div><div><div class="bed-id">4B-19</div><div class="bed-info">North Wing · Available now</div></div></div><span class="bed-status-tag tag-free">READY</span></div>
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--green)"></div><div><div class="bed-id">4B-25</div><div class="bed-info">East Wing · Available now</div></div></div><span class="bed-status-tag tag-free">READY</span></div>
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--yellow)"></div><div><div class="bed-id">4B-15</div><div class="bed-info">Cleaning · ETA ~18 min</div></div></div><span class="bed-status-tag tag-clean">CLEANING</span></div>
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--yellow)"></div><div><div class="bed-id">4B-22</div><div class="bed-info">Cleaning · ETA ~22 min</div></div></div><span class="bed-status-tag tag-clean">CLEANING</span></div>
+        <div class="bed-row"><div class="bed-row-left"><div class="bed-dot" style="background:var(--blue)"></div><div><div class="bed-id">4B-03</div><div class="bed-info">Predicted discharge · 87% · ~90 min</div></div></div><span class="bed-status-tag tag-pred">~90 MIN</span></div>
+      </div>
+    </div>
+
+    <!-- PATIENTS TAB -->
+    <div class="view" id="view-patients">
+      <div class="section-header">
+        <span class="section-title">👥 Active Patients</span>
+        <span class="badge-blue">21 patients</span>
+      </div>
+      <div class="patient-list">
+        <div class="patient-card">
+          <div class="patient-top"><div><div class="patient-name">J. Martinez, 67M</div><div style="font-size:10px;color:var(--muted)">Cardiology · Dr. Patel · LOS Day 4</div></div><div class="patient-bed">4B-03</div></div>
+          <div class="patient-tags"><span class="ptag ptag-dc">DC TODAY</span><span class="ptag" style="background:rgba(0,200,150,0.12);color:var(--green);border:1px solid rgba(0,200,150,0.25)">CHART ✓</span><span class="ptag" style="background:rgba(0,200,150,0.12);color:var(--green);border:1px solid rgba(0,200,150,0.25)">LABS ✓</span></div>
+          <div class="patient-blockers"><span class="ok">✓</span> Transport arranged · Family notified · Scripts sent</div>
+        </div>
+        <div class="patient-card">
+          <div class="patient-top"><div><div class="patient-name">R. Thompson, 54F</div><div style="font-size:10px;color:var(--muted)">Med/Surg · Dr. Kim · LOS Day 7</div></div><div class="patient-bed">4B-19</div></div>
+          <div class="patient-tags"><span class="ptag ptag-los">EXTENDED LOS</span><span class="ptag ptag-labs">LABS PENDING</span></div>
+          <div class="patient-blockers"><strong>⚠ Blocker:</strong> Pending SNF placement · PT eval needed</div>
+        </div>
+        <div class="patient-card">
+          <div class="patient-top"><div><div class="patient-name">A. Nguyen, 78M</div><div style="font-size:10px;color:var(--muted)">Cardiology · Dr. Patel · LOS Day 2</div></div><div class="patient-bed">4B-11</div></div>
+          <div class="patient-tags"><span class="ptag ptag-chart">CHART PENDING</span></div>
+          <div class="patient-blockers"><strong>⚠ Blocker:</strong> AM labs not yet resulted · Echo pending</div>
+        </div>
+        <div class="patient-card">
+          <div class="patient-top"><div><div class="patient-name">S. Patel, 45F</div><div style="font-size:10px;color:var(--muted)">Pulmonology · Dr. Lee · LOS Day 1</div></div><div class="patient-bed">4B-06</div></div>
+          <div class="patient-tags"><span class="ptag" style="background:rgba(0,212,212,0.1);color:var(--cyan);border:1px solid rgba(0,212,212,0.25)">ADMITTED TODAY</span></div>
+          <div class="patient-blockers"><span class="ok">✓</span> Stable · Monitoring initiated</div>
+        </div>
+        <div class="patient-card">
+          <div class="patient-top"><div><div class="patient-name">M. Johnson, 61M</div><div style="font-size:10px;color:var(--muted)">Med/Surg · Dr. Chen · LOS Day 3</div></div><div class="patient-bed">4B-14</div></div>
+          <div class="patient-tags"><span class="ptag ptag-dc">DC TOMORROW</span><span class="ptag ptag-labs">LABS PENDING</span></div>
+          <div class="patient-blockers"><strong>⚠ Blocker:</strong> Final labs at 2pm · Home health referral pending</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div class="view" id="view-reports">
+      <div class="section-header"><span class="section-title">📊 Today's Performance</span></div>
+      <div class="reports-section">
+        <div class="revenue-highlight">
+          <div class="revenue-title">💰 Revenue Unlocked Today</div>
+          <div class="revenue-amount">$84,200</div>
+          <div class="revenue-sub">vs. $61,400 same day last week</div>
+          <div class="revenue-breakdown">
+            <div class="rev-row"><span>Beds recovered via HelioOps</span><strong>+3 beds</strong></div>
+            <div class="rev-row"><span>Avg revenue per bed/day</span><strong>$2,800</strong></div>
+            <div class="rev-row"><span>Boarding hours avoided</span><strong>14.5 hrs</strong></div>
+            <div class="rev-row"><span>LOS reduction vs. baseline</span><strong>-0.6 days</strong></div>
+          </div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-label">Utilization</div><div class="kpi-value" style="color:var(--cyan)">82%</div><div class="kpi-trend trend-up">↑ 7% vs last week</div></div>
+          <div class="kpi-card"><div class="kpi-label">Avg LOS</div><div class="kpi-value" style="color:var(--blue)">3.8d</div><div class="kpi-trend trend-up">↓ 0.6d improvement</div></div>
+          <div class="kpi-card"><div class="kpi-label">DC by Noon</div><div class="kpi-value" style="color:var(--green)">4</div><div class="kpi-sub">of 6 predicted</div></div>
+          <div class="kpi-card"><div class="kpi-label">Boarding Time</div><div class="kpi-value" style="color:var(--yellow)">1.2h</div><div class="kpi-trend trend-up">↓ from 3.8h avg</div></div>
+        </div>
+        <div class="report-card">
+          <div class="report-title">Discharge Blockers — Today</div>
+          <div class="mini-bar-row"><span class="mini-bar-label">SNF Placement</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:60%;background:var(--red)"></div></div><span class="mini-bar-val">3 pts</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Labs Pending</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:40%;background:var(--yellow)"></div></div><span class="mini-bar-val">2 pts</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Transport</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:20%;background:var(--blue)"></div></div><span class="mini-bar-val">1 pt</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Chart Gaps</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:20%;background:var(--muted)"></div></div><span class="mini-bar-val">1 pt</span></div>
+        </div>
+        <div class="report-card">
+          <div class="report-title">Bed Turnover Speed</div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Avg Clean Time</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:55%;background:var(--green)"></div></div><span class="mini-bar-val">22 min</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Assign Speed</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:80%;background:var(--cyan)"></div></div><span class="mini-bar-val">8 min</span></div>
+          <div class="mini-bar-row"><span class="mini-bar-label">Total Turnover</span><div class="mini-bar-track"><div class="mini-bar-fill" style="width:65%;background:var(--blue)"></div></div><span class="mini-bar-val">31 min</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-alerts" onclick="switchTab('alerts')"><div class="nav-icon">⚡</div><span>Alerts</span></div>
+    <div class="nav-item" id="nav-beds" onclick="switchTab('beds')"><div class="nav-icon">🗺</div><span>Beds</span></div>
+    <div class="nav-item" id="nav-patients" onclick="switchTab('patients')"><div class="nav-icon">👥</div><span>Patients</span></div>
+    <div class="nav-item" id="nav-reports" onclick="switchTab('reports')"><div class="nav-icon">📊</div><span>Reports</span></div>
+  </div>
+
+  <!-- ASSIGN MODAL -->
+  <div class="modal-overlay" id="assignModal" onclick="hideModal(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Assign Bed — ED Patient</div>
+      <div class="modal-sub">BOARDING 4H+ · PRIORITY: HIGH</div>
+      <div class="match-card">
+        <div class="match-header"><div class="match-bed">✓ BED 4B-05 — Best Match</div><div class="match-eta">Ready now</div></div>
+        <div class="match-detail"><strong>Floor 4 · North Wing</strong><br>Same service line · Cleaned 8 min ago<br>Nurse ratio: 1:4 → 1:5 after assign</div>
+      </div>
+      <div class="match-card" style="border-color:rgba(61,158,255,0.3);opacity:0.7">
+        <div class="match-header"><div class="match-bed" style="color:var(--blue)">BED 4B-09 — Alt Match</div><div class="match-eta">~15 min</div></div>
+        <div class="match-detail"><strong>Floor 4 · South Wing</strong><br>Cleaning in progress · ETA 15 min</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="hideModal()">Cancel</button>
+        <button class="btn-confirm-assign" onclick="confirmAssign()">✓ Confirm 4B-05</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function switchTab(tab) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    document.getElementById('nav-' + tab).classList.add('active');
+    document.querySelector('.content-area').scrollTop = 0;
+  }
+  function showModal() { document.getElementById('assignModal').classList.add('show'); }
+  function hideModal(e) { if (!e || e.target === document.getElementById('assignModal')) document.getElementById('assignModal').classList.remove('show'); }
+  function confirmAssign() {
+    document.getElementById('assignModal').classList.remove('show');
+    document.querySelectorAll('.bed-cell').forEach(b => { if (b.textContent === '4B-05') { b.classList.remove('bed-free'); b.classList.add('bed-occ'); } });
+    const btn = document.querySelector('.btn-assign');
+    const card = document.querySelector('.alert-card.urgent');
+    card.style.opacity = '0.4';
+    btn.textContent = '✓ ASSIGNED';
+    btn.className = 'btn btn-confirm';
+    btn.onclick = null;
+  }
+</script>
+</body>
+</html>
