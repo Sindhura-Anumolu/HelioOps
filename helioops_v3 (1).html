@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Helio-Ops — Hospital Throughput Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B0E13;
+  --ink2:#3D4450;
+  --ink3:#8A909C;
+  --teal:#0A8F84;
+  --teal-l:#E8F7F5;
+  --teal-m:#12B5A8;
+  --line:#EAEDF2;
+  --surface:#FFFFFF;
+  --bg:#F7F9FC;
+  --green:#0F9D6E;
+  --gl:#E6F7F1;
+  --red:#D94040;
+  --rl:#FDEAEA;
+  --amber:#C97B10;
+  --al:#FDF3E3;
+  --blue:#2B6CB0;
+  --bl:#EBF4FF;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--surface);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line);height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 48px}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.nav-logo-mark{width:26px;height:26px;background:var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center}
+.nav-logo-h{font-family:'JetBrains Mono',monospace;font-size:11px;color:#fff;font-weight:500}
+.nav-logo-text{font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:var(--ink);letter-spacing:-0.3px}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:13px;font-weight:500;color:var(--ink2);text-decoration:none;transition:color .15s}
+.nav-links a:hover{color:var(--ink)}
+.nav-cta{background:var(--ink);color:#fff;font-size:13px;font-weight:600;padding:8px 18px;border-radius:6px;text-decoration:none;transition:opacity .15s}
+.nav-cta:hover{opacity:0.85}
+
+/* HERO */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:0;padding:80px 0 0;border-bottom:1px solid var(--line)}
+.hero-left{padding:80px 64px 80px 48px;display:flex;flex-direction:column;gap:0}
+.hero-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);letter-spacing:2px;text-transform:uppercase;margin-bottom:28px}
+.hero-h{font-family:'Instrument Serif',serif;font-size:clamp(44px,5vw,68px);line-height:1.05;letter-spacing:-0.5px;color:var(--ink);margin-bottom:24px}
+.hero-h em{font-style:italic;color:var(--teal)}
+.hero-sub{font-size:16px;color:var(--ink2);line-height:1.7;max-width:440px;margin-bottom:40px;font-weight:400}
+
+/* Role tabs */
+.role-tabs{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;width:fit-content;margin-bottom:28px}
+.rtab{padding:9px 18px;font-size:13px;font-weight:500;color:var(--ink3);background:var(--surface);border:none;cursor:pointer;font-family:'Inter',sans-serif;border-right:1px solid var(--line);transition:all .15s}
+.rtab:last-child{border-right:none}
+.rtab.on{background:var(--ink);color:#fff}
+.rtab:hover:not(.on){background:var(--bg);color:var(--ink)}
+.role-panel{display:none}
+.role-panel.on{display:block}
+.role-hed{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:8px;letter-spacing:-0.2px}
+.role-body{font-size:14px;color:var(--ink2);line-height:1.65;margin-bottom:18px}
+.role-pts{display:flex;flex-direction:column;gap:7px;margin-bottom:24px}
+.rpt{display:flex;align-items:flex-start;gap:9px;font-size:14px;color:var(--ink2)}
+.rpt-check{width:18px;height:18px;background:var(--teal-l);border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-size:10px;color:var(--teal)}
+.hero-actions{display:flex;gap:12px;align-items:center}
+.btn-ink{background:var(--ink);color:#fff;font-size:14px;font-weight:600;padding:13px 26px;border-radius:6px;text-decoration:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;display:inline-block}
+.btn-ink:hover{opacity:0.85}
+.btn-line{font-size:14px;font-weight:500;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:5px;transition:color .15s}
+.btn-line:hover{color:var(--teal)}
+.btn-line::after{content:'→';transition:transform .15s}
+.btn-line:hover::after{transform:translateX(3px)}
+
+/* Hero right — phones */
+.hero-right{position:relative;height:100%;background:var(--bg);border-left:1px solid var(--line);display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden}
+.phones{position:relative;width:380px;height:520px}
+.ph{position:absolute;background:#fff;border-radius:28px;box-shadow:0 0 0 4px var(--ink),0 24px 48px rgba(0,0,0,0.12);overflow:hidden;display:flex;flex-direction:column}
+.ph-main{width:210px;height:430px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3}
+.ph-l{width:185px;height:380px;left:8%;top:12%;transform:rotate(-7deg);z-index:1;opacity:0.7}
+.ph-r{width:185px;height:380px;right:8%;top:16%;transform:rotate(7deg);z-index:1;opacity:0.7}
+.ph-sb{background:var(--ink);padding:6px 12px 4px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+.ph-t{font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff}
+.ph-live{display:flex;align-items:center;gap:3px;font-size:8px;font-weight:600;color:var(--teal-m);background:rgba(18,181,168,0.12);padding:2px 7px;border-radius:10px}
+.ph-ld{width:5px;height:5px;background:var(--teal-m);border-radius:50%;animation:p 2s infinite}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.3}}
+.ph-hdr{padding:7px 10px 5px;border-bottom:1px solid var(--line);flex-shrink:0}
+.ph-unit{font-size:11px;font-weight:600;color:var(--ink)}
+.ph-sub{font-size:8px;color:var(--ink3);margin-top:1px}
+.ph-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:4px 7px;border-bottom:1px solid var(--line);flex-shrink:0}
+.ph-st{background:var(--bg);border-radius:4px;padding:4px 2px;text-align:center}
+.ph-sn{font-size:12px;font-weight:700;line-height:1;font-family:'JetBrains Mono',monospace}
+.ph-sl{font-size:6.5px;font-weight:500;text-transform:uppercase;color:var(--ink3);margin-top:1px;letter-spacing:0.3px}
+.ph-body{flex:1;overflow:hidden;padding:6px 7px;display:flex;flex-direction:column;gap:4px}
+.ph-sec{font-size:7.5px;font-weight:600;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase}
+.ph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px}
+.pb{border-radius:4px;padding:4px 2px;text-align:center;border:1px solid transparent}
+.pb-id{font-size:7.5px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.pb-s{font-size:6.5px;font-weight:600;text-transform:uppercase;margin-top:1px}
+.pb-o{background:#F5F6F8;border-color:var(--line)}.pb-o .pb-id,.pb-o .pb-s{color:var(--ink3)}
+.pb-a{background:var(--gl);border-color:var(--green)}.pb-a .pb-id{color:#065F46}.pb-a .pb-s{color:var(--green)}
+.pb-p{background:var(--al);border-color:var(--amber)}.pb-p .pb-id{color:#7A4A05}.pb-p .pb-s{color:var(--amber)}
+.pb-c{background:var(--bl);border-color:var(--blue)}.pb-c .pb-id{color:#1A4E8A}.pb-c .pb-s{color:var(--blue)}
+.al{border-radius:6px;overflow:hidden;border:1px solid var(--line);flex-shrink:0}
+.al.hl{border-color:var(--green)}
+.al-bar{height:2.5px}
+.al-bar-g{background:var(--green)}.al-bar-r{background:var(--red)}.al-bar-a{background:var(--amber)}
+.al-bd{padding:6px 8px}
+.al-t{font-size:9.5px;font-weight:600;color:var(--ink);margin-bottom:1px}
+.al-s{font-size:8px;color:var(--ink2)}
+.al-btn{margin:3px 8px 6px;width:calc(100% - 16px);padding:5px;border-radius:4px;border:none;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;cursor:pointer;font-family:'Inter',sans-serif;background:var(--green);color:#fff}
+.coo-bd{padding:7px}
+.coo-r{background:#F0FDF9;border:1px solid var(--green);border-radius:6px;padding:9px;margin-bottom:5px}
+.coo-rn{font-family:'Instrument Serif',serif;font-size:24px;color:var(--green);line-height:1}
+.coo-rl{font-size:8px;color:var(--teal);margin-top:1px}
+.coo-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line);font-size:8px}
+.coo-row:last-child{border-bottom:none}
+.coo-k{color:var(--ink2)}.coo-v{font-weight:600;color:var(--green)}
+
+/* PROBLEM */
+.problem{padding:96px 48px;border-bottom:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.prob-left{}
+.prob-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:20px}
+.prob-h{font-family:'Instrument Serif',serif;font-size:clamp(30px,3.5vw,46px);line-height:1.15;letter-spacing:-0.3px;margin-bottom:20px}
+.prob-h em{font-style:italic;color:var(--teal)}
+.prob-body{font-size:15px;color:var(--ink2);line-height:1.7;max-width:480px}
+.prob-right{display:flex;flex-direction:column;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.prob-stat{padding:28px 32px;border-bottom:1px solid var(--line)}
+.prob-stat:last-child{border-bottom:none}
+.prob-n{font-family:'Instrument Serif',serif;font-size:48px;color:var(--ink);line-height:1;margin-bottom:6px}
+.prob-n span{color:var(--teal)}
+.prob-l{font-size:14px;color:var(--ink2);line-height:1.5}
+.prob-src{font-size:11px;color:var(--ink3);margin-top:4px;font-family:'JetBrains Mono',monospace}
+
+/* PRODUCT */
+.product{padding:96px 48px;border-bottom:1px solid var(--line);background:var(--bg)}
+.sec-label{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+.sec-h{font-family:'Instrument Serif',serif;font-size:clamp(30px,3.5vw,46px);line-height:1.15;letter-spacing:-0.3px;margin-bottom:48px}
+.sec-h em{font-style:italic;color:var(--teal)}
+.screens{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.screen{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.screen-top{background:var(--bg);padding:28px 20px 0;display:flex;justify-content:center;align-items:flex-end;min-height:240px;border-bottom:1px solid var(--line)}
+.screen-bottom{padding:20px}
+.screen-title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:5px;letter-spacing:-0.2px}
+.screen-body{font-size:13px;color:var(--ink2);line-height:1.6}
+.mini-ph{width:148px;background:var(--surface);border-radius:16px;box-shadow:0 0 0 3px var(--ink),0 12px 24px rgba(0,0,0,0.1);overflow:hidden}
+.mp-sb{background:var(--ink);padding:4px 9px 3px;display:flex;justify-content:space-between}
+.mp-t{font-family:'JetBrains Mono',monospace;font-size:7.5px;color:#fff}
+.mp-live{font-size:7px;font-weight:600;color:var(--teal-m)}
+.mp-hdr{padding:5px 8px 4px;border-bottom:1px solid var(--line)}
+.mp-unit{font-size:9px;font-weight:600;color:var(--ink)}
+.mp-sub{font-size:7px;color:var(--ink3)}
+.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:5px}
+.mbm{border-radius:3px;padding:4px 2px;text-align:center;border:1px solid transparent}
+.mbm-id{font-size:7px;font-weight:600;font-family:'JetBrains Mono',monospace}
+.mbm-s{font-size:6px;font-weight:600;text-transform:uppercase;margin-top:1px}
+.mbm-o{background:#F5F6F8;border-color:var(--line)}.mbm-o .mbm-id,.mbm-o .mbm-s{color:var(--ink3)}
+.mbm-a{background:var(--gl);border-color:var(--green)}.mbm-a .mbm-id{color:#065F46}.mbm-a .mbm-s{color:var(--green)}
+.mbm-p{background:var(--al);border-color:var(--amber)}.mbm-p .mbm-id{color:#7A4A05}.mbm-p .mbm-s{color:var(--amber)}
+.mbm-c{background:var(--bl);border-color:var(--blue)}.mbm-c .mbm-id{color:#1A4E8A}.mbm-c .mbm-s{color:var(--blue)}
+.al-mini{border-radius:4px;overflow:hidden;margin:0 5px 4px;border:1px solid var(--line)}
+.al-mini.hl{border-color:var(--green)}
+.al-mini-bar{height:2px}
+.al-mini-bar-g{background:var(--green)}.al-mini-bar-r{background:var(--red)}.al-mini-bar-a{background:var(--amber)}
+.al-mini-bd{padding:5px 6px}
+.al-mini-t{font-size:8.5px;font-weight:600;color:var(--ink);margin-bottom:1px}
+.al-mini-s{font-size:7.5px;color:var(--ink2)}
+.coo-mini{padding:6px}
+.coo-mini-r{background:#F0FDF9;border:1px solid var(--green);border-radius:5px;padding:7px;margin-bottom:4px}
+.coo-mini-n{font-family:'Instrument Serif',serif;font-size:20px;color:var(--green);line-height:1}
+.coo-mini-l{font-size:7.5px;color:var(--teal);margin-top:1px}
+.coo-mini-row{display:flex;justify-content:space-between;font-size:7.5px;padding:3px 0;border-bottom:1px solid var(--line)}
+.coo-mini-row:last-child{border-bottom:none}
+.coo-mini-k{color:var(--ink2)}.coo-mini-v{font-weight:600;color:var(--green)}
+
+/* HOW */
+.how{padding:96px 48px;border-bottom:1px solid var(--line)}
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:48px}
+.how-step{padding:36px 28px;border-right:1px solid var(--line);transition:background .15s}
+.how-step:last-child{border-right:none}
+.how-step:hover{background:var(--bg)}
+.how-step-n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--teal);font-weight:500;margin-bottom:16px;letter-spacing:1px}
+.how-step-title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px;letter-spacing:-0.2px}
+.how-step-body{font-size:13px;color:var(--ink2);line-height:1.6}
+.how-chip{display:inline-block;margin-top:12px;font-size:11px;font-weight:500;color:var(--teal);background:var(--teal-l);padding:3px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+
+/* CONTACT */
+.contact{padding:96px 48px;background:var(--bg);border-bottom:1px solid var(--line)}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:start;max-width:960px}
+.contact-left h2{font-family:'Instrument Serif',serif;font-size:clamp(28px,3.5vw,44px);line-height:1.15;letter-spacing:-0.3px;margin-bottom:14px}
+.contact-left h2 em{font-style:italic;color:var(--teal)}
+.contact-left p{font-size:15px;color:var(--ink2);line-height:1.7;margin-bottom:28px}
+.cd{display:flex;align-items:flex-start;gap:10px;font-size:13px;margin-bottom:12px}
+.cd-icon{width:30px;height:30px;background:var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.cd-label{font-weight:600;color:var(--ink);font-size:12px;margin-bottom:2px}
+.cd-val{color:var(--ink2);font-size:13px}
+.cf{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:36px}
+.cf-title{font-size:18px;font-weight:600;color:var(--ink);margin-bottom:24px;letter-spacing:-0.2px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin-bottom:5px;letter-spacing:0.1px}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;color:var(--ink);background:var(--surface);transition:border-color .15s;outline:none;-webkit-appearance:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal)}
+.fg textarea{height:80px;resize:vertical}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fsub{width:100%;padding:12px;background:var(--ink);color:#fff;border:none;border-radius:6px;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:6px}
+.fsub:hover{opacity:0.85}
+.fn{font-size:11px;color:var(--ink3);text-align:center;margin-top:10px;font-family:'JetBrains Mono',monospace}
+.form-ok{display:none;text-align:center;padding:40px 20px}
+.form-ok h3{font-family:'Instrument Serif',serif;font-size:26px;margin-bottom:8px}
+.form-ok p{font-size:13px;color:var(--ink2)}
+
+/* FOOTER */
+footer{padding:36px 48px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line)}
+.foot-logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.foot-logo-mark{width:22px;height:22px;background:var(--ink);border-radius:5px;display:flex;align-items:center;justify-content:center}
+.foot-logo-h{font-family:'JetBrains Mono',monospace;font-size:9px;color:#fff;font-weight:500}
+.foot-logo-text{font-size:14px;font-weight:600;color:var(--ink)}
+.foot-right{font-size:12px;color:var(--ink3);display:flex;gap:24px;align-items:center}
+.foot-right a{color:var(--ink3);text-decoration:none;transition:color .15s}
+.foot-right a:hover{color:var(--ink)}
+
+@media(max-width:768px){
+  nav{padding:0 20px}
+  .hero{grid-template-columns:1fr}
+  .hero-left{padding:80px 24px 48px}
+  .hero-right{display:none}
+  .problem,.how,.contact{padding:64px 24px}
+  .product{padding:64px 24px}
+  .problem{grid-template-columns:1fr}
+  .screens{grid-template-columns:1fr}
+  .how-steps{grid-template-columns:1fr 1fr}
+  .contact-grid{grid-template-columns:1fr}
+  footer{padding:24px;flex-direction:column;gap:16px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark"><span class="nav-logo-h">H</span></div>
+    <span class="nav-logo-text">Helio-Ops</span>
+  </a>
+  <div class="nav-links">
+    <a href="#product">Product</a>
+    <a href="#how">How it works</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#contact" class="nav-cta">Request Demo</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-eyebrow">helioops.ai</div>
+    <h1 class="hero-h">By the time the nurse<br>knows, the patient is<br>already <em>in the elevator.</em></h1>
+    <p class="hero-sub">Helio-Ops gives hospital teams 2 to 4 hours of advance notice before a bed goes idle — so charge nurses can act before the ED starts boarding.</p>
+
+    <div class="role-tabs">
+      <button class="rtab on" onclick="setRole(this,'coo')">COO</button>
+      <button class="rtab" onclick="setRole(this,'nurse')">Charge Nurse</button>
+      <button class="rtab" onclick="setRole(this,'it')">IT</button>
+    </div>
+
+    <div class="role-panel on" id="rp-coo">
+      <div class="role-hed">Stop losing admissions you had capacity for.</div>
+      <div class="role-body">During peak ED congestion, beds sit idle between discharge and the next admission — not because demand isn't there, but because nobody had advance notice. That's throughput you already paid to staff.</div>
+      <div class="role-pts">
+        <div class="rpt"><div class="rpt-check">✓</div>Layers on top of Epic — no replacement</div>
+        <div class="rpt"><div class="rpt-check">✓</div>Live in 6 weeks via existing middleware</div>
+        <div class="rpt"><div class="rpt-check">✓</div>90-day pilot — measurable outcomes</div>
+      </div>
+      <div class="hero-actions"><a href="#contact" class="btn-ink">Request a Demo</a><a href="#product" class="btn-line">See the product</a></div>
+    </div>
+
+    <div class="role-panel" id="rp-nurse">
+      <div class="role-hed">Know which beds are ready and who's leaving — right now.</div>
+      <div class="role-body">One alert. Live bed board. Works on any phone you already carry. No new system to learn during a shift.</div>
+      <div class="role-pts">
+        <div class="rpt"><div class="rpt-check">✓</div>One alert per event — no alert fatigue</div>
+        <div class="rpt"><div class="rpt-check">✓</div>Live bed board updated from Epic automatically</div>
+        <div class="rpt"><div class="rpt-check">✓</div>Quick to learn — designed for busy shifts</div>
+      </div>
+      <div class="hero-actions"><a href="#product" class="btn-ink">See how it works</a></div>
+    </div>
+
+    <div class="role-panel" id="rp-it">
+      <div class="role-hed">No Epic replacement. No new infrastructure.</div>
+      <div class="role-body">HL7/FHIR connection through your existing middleware — Redox, Rhapsody, or whatever you have. HIPAA BAA signed before any data exchange.</div>
+      <div class="role-pts">
+        <div class="rpt"><div class="rpt-check">✓</div>Works with your existing integration setup</div>
+        <div class="rpt"><div class="rpt-check">✓</div>HIPAA BAA before any data is touched</div>
+        <div class="rpt"><div class="rpt-check">✓</div>4–6 week implementation</div>
+      </div>
+      <div class="hero-actions"><a href="#contact" class="btn-ink">Talk to us</a></div>
+    </div>
+  </div>
+
+  <!-- Phones -->
+  <div class="hero-right">
+    <div class="phones">
+      <!-- Left phone — bed board -->
+      <div class="ph ph-l">
+        <div class="ph-sb"><span class="ph-t">9:41</span><div class="ph-live"><div class="ph-ld"></div>LIVE</div></div>
+        <div class="ph-hdr"><div class="ph-unit">4B Med/Surg</div><div class="ph-sub">28 beds · Updated now</div></div>
+        <div class="ph-stats">
+          <div class="ph-st"><div class="ph-sn" style="color:#D94040">21</div><div class="ph-sl">Occ</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#0F9D6E">4</div><div class="ph-sl">Free</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#C97B10">5</div><div class="ph-sl">Pred</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#8B5CF6">1</div><div class="ph-sl">Board</div></div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-sec">Bed map</div>
+          <div class="ph-grid">
+            <div class="pb pb-o"><div class="pb-id">4B-01</div><div class="pb-s">OCC</div></div>
+            <div class="pb pb-p"><div class="pb-id">4B-02</div><div class="pb-s">~2H</div></div>
+            <div class="pb pb-a"><div class="pb-id">4B-03</div><div class="pb-s">FREE</div></div>
+            <div class="pb pb-o"><div class="pb-id">4B-04</div><div class="pb-s">OCC</div></div>
+            <div class="pb pb-c"><div class="pb-id">4B-05</div><div class="pb-s">CLEAN</div></div>
+            <div class="pb pb-a"><div class="pb-id">4B-06</div><div class="pb-s">FREE</div></div>
+            <div class="pb pb-o"><div class="pb-id">4B-07</div><div class="pb-s">OCC</div></div>
+            <div class="pb pb-o"><div class="pb-id">4B-08</div><div class="pb-s">OCC</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center phone — alerts -->
+      <div class="ph ph-main">
+        <div class="ph-sb"><span class="ph-t">9:41</span><div class="ph-live"><div class="ph-ld"></div>LIVE</div></div>
+        <div class="ph-hdr"><div class="ph-unit">4B Medical / Surgical</div><div class="ph-sub">Shift A · 28 beds</div></div>
+        <div class="ph-stats">
+          <div class="ph-st"><div class="ph-sn" style="color:#D94040">3</div><div class="ph-sl">Alerts</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#0F9D6E">4</div><div class="ph-sl">Avail</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#C97B10">5</div><div class="ph-sl">Pred</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#8B5CF6">1</div><div class="ph-sl">Board</div></div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-sec">Active alerts</div>
+          <div class="al hl">
+            <div class="al-bar al-bar-g"></div>
+            <div class="al-bd">
+              <div class="al-t">✓ Predicted Discharge — 2h</div>
+              <div class="al-s">Bed 4B-03 · Mrs. Johnson · 94% confidence</div>
+            </div>
+            <button class="al-btn">Prep for Discharge</button>
+          </div>
+          <div class="al">
+            <div class="al-bar al-bar-r"></div>
+            <div class="al-bd">
+              <div class="al-t">⚠ Boarding — ED Wait 4h+</div>
+              <div class="al-s">Bed 4B-12 · Patient since 05:30</div>
+            </div>
+          </div>
+          <div class="al">
+            <div class="al-bar al-bar-a"></div>
+            <div class="al-bd">
+              <div class="al-t">⏱ Extended LOS — Day 6</div>
+              <div class="al-s">Bed 4B-19 · Expected: Day 4</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right phone — COO -->
+      <div class="ph ph-r">
+        <div class="ph-sb"><span class="ph-t">9:41</span><div class="ph-live"><div class="ph-ld"></div>LIVE</div></div>
+        <div class="ph-hdr"><div class="ph-unit">Shift Impact</div><div class="ph-sub">Today · 4B unit</div></div>
+        <div class="ph-stats">
+          <div class="ph-st"><div class="ph-sn" style="color:#0A8F84">82%</div><div class="ph-sl">Util</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#0F9D6E">3.8d</div><div class="ph-sl">LOS</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#8B5CF6">1.2h</div><div class="ph-sl">Board</div></div>
+          <div class="ph-st"><div class="ph-sn" style="color:#0F9D6E">+3</div><div class="ph-sl">Beds</div></div>
+        </div>
+        <div class="ph-body">
+          <div class="coo-bd">
+            <div class="coo-r">
+              <div class="coo-rn">$84K</div>
+              <div class="coo-rl">Revenue unlocked today</div>
+            </div>
+            <div class="coo-row"><span class="coo-k">Boarding avoided</span><span class="coo-v">14.5 hrs</span></div>
+            <div class="coo-row"><span class="coo-k">Turnover time</span><span class="coo-v">↓ 31→17 min</span></div>
+            <div class="coo-row" style="border:none"><span class="coo-k">LOS delta</span><span class="coo-v">−0.6 days</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem">
+  <div class="prob-left">
+    <div class="prob-label">The problem</div>
+    <h2 class="prob-h">The data is in Epic.<br>The beds are ready.<br><em>Nobody knows.</em></h2>
+    <p class="prob-body">Discharge coordination still happens through phone calls, manual whiteboards, and group texts. By the time the charge nurse finds out a bed is opening — the next patient has already been waiting in the ED for hours. The information exists. It just never reaches the right person in time to matter.</p>
+  </div>
+  <div class="prob-right">
+    <div class="prob-stat">
+      <div class="prob-n"><span>75</span>%</div>
+      <div class="prob-l">Average US hospital occupancy — the gap isn't demand, it's visibility.</div>
+      <div class="prob-src">JAMA Network Open, 2025</div>
+    </div>
+    <div class="prob-stat">
+      <div class="prob-n"><span>4</span>+ hrs</div>
+      <div class="prob-l">Average patient wait for a bed that already exists somewhere in the hospital.</div>
+      <div class="prob-src">Health Affairs, 2025</div>
+    </div>
+    <div class="prob-stat">
+      <div class="prob-n"><span>85</span>%</div>
+      <div class="prob-l">Projected occupancy by 2032 — a level experts consider a critical shortage.</div>
+      <div class="prob-src">JAMA Network Open, 2025</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT -->
+<section class="product" id="product">
+  <div class="sec-label">The product</div>
+  <h2 class="sec-h">One platform.<br>Built for the <em>floor.</em></h2>
+  <div class="screens">
+    <div class="screen">
+      <div class="screen-top">
+        <div class="mini-ph">
+          <div class="mp-sb"><span class="mp-t">9:41</span><span class="mp-live">● LIVE</span></div>
+          <div class="mp-hdr"><div class="mp-unit">4B Medical / Surgical</div><div class="mp-sub">28 beds · Updated now</div></div>
+          <div class="mini-grid">
+            <div class="mbm mbm-o"><div class="mbm-id">4B-01</div><div class="mbm-s">OCC</div></div>
+            <div class="mbm mbm-p"><div class="mbm-id">4B-02</div><div class="mbm-s">~2H</div></div>
+            <div class="mbm mbm-a"><div class="mbm-id">4B-03</div><div class="mbm-s">FREE</div></div>
+            <div class="mbm mbm-o"><div class="mbm-id">4B-04</div><div class="mbm-s">OCC</div></div>
+            <div class="mbm mbm-c"><div class="mbm-id">4B-05</div><div class="mbm-s">CLEAN</div></div>
+            <div class="mbm mbm-a"><div class="mbm-id">4B-06</div><div class="mbm-s">FREE</div></div>
+            <div class="mbm mbm-o"><div class="mbm-id">4B-07</div><div class="mbm-s">OCC</div></div>
+            <div class="mbm mbm-p"><div class="mbm-id">4B-08</div><div class="mbm-s">~3H</div></div>
+            <div class="mbm mbm-o"><div class="mbm-id">4B-09</div><div class="mbm-s">OCC</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-bottom">
+        <div class="screen-title">Live Bed Board</div>
+        <div class="screen-body">Every bed on the unit, color-coded, updated automatically from Epic. Green is available. Amber means a discharge is predicted soon. No calls. No whiteboard.</div>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="screen-top">
+        <div class="mini-ph">
+          <div class="mp-sb"><span class="mp-t">9:41</span><span class="mp-live">● LIVE</span></div>
+          <div class="mp-hdr"><div class="mp-unit">Active Alerts</div><div class="mp-sub">3 alerts · Shift A</div></div>
+          <div style="padding:5px">
+            <div class="al-mini hl"><div class="al-mini-bar al-mini-bar-g"></div><div class="al-mini-bd"><div class="al-mini-t">✓ Predicted Discharge</div><div class="al-mini-s">Bed 4B-03 · AI 94%</div></div></div>
+            <div class="al-mini"><div class="al-mini-bar al-mini-bar-r"></div><div class="al-mini-bd"><div class="al-mini-t">⚠ Boarding — ED Wait</div><div class="al-mini-s">Bed 4B-12 · 4h+</div></div></div>
+            <div class="al-mini"><div class="al-mini-bar al-mini-bar-a"></div><div class="al-mini-bd"><div class="al-mini-t">⏱ Extended LOS</div><div class="al-mini-s">Bed 4B-19 · Day 6 of 4</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-bottom">
+        <div class="screen-title">Smart Alerts</div>
+        <div class="screen-body">Three alert types. One per event. Designed to eliminate alert fatigue — if it fires, it matters. Works on any phone the nurse already carries.</div>
+      </div>
+    </div>
+
+    <div class="screen">
+      <div class="screen-top">
+        <div class="mini-ph">
+          <div class="mp-sb"><span class="mp-t">9:41</span><span class="mp-live">● LIVE</span></div>
+          <div class="mp-hdr"><div class="mp-unit">Shift Impact</div><div class="mp-sub">Today · 4B</div></div>
+          <div class="coo-mini">
+            <div class="coo-mini-r"><div class="coo-mini-n">$84K</div><div class="coo-mini-l">Revenue unlocked today</div></div>
+            <div class="coo-mini-row"><span class="coo-mini-k">Boarding avoided</span><span class="coo-mini-v">14.5 hrs</span></div>
+            <div class="coo-mini-row"><span class="coo-mini-k">Turnover time</span><span class="coo-mini-v">↓ 50%</span></div>
+            <div class="coo-mini-row" style="border:none"><span class="coo-mini-k">LOS delta</span><span class="coo-mini-v">−0.6 days</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="screen-bottom">
+        <div class="screen-title">Operations Dashboard</div>
+        <div class="screen-body">The COO sees boarding hours, LOS trends, and bed turnover — the same day, not at the end of the month.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="sec-label">How it works</div>
+  <h2 class="sec-h">Live in <em>6 weeks.</em></h2>
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="how-step-n">01</div>
+      <div class="how-step-title">Connect via middleware</div>
+      <div class="how-step-body">HL7/FHIR through your existing setup — Redox, Rhapsody, or whatever you have. No new infrastructure.</div>
+      <div class="how-chip">4–6 weeks</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-n">02</div>
+      <div class="how-step-title">AI learns your hospital</div>
+      <div class="how-step-body">Models trained on your hospital's own data — not a generic algorithm. Gets smarter every shift.</div>
+      <div class="how-chip">Per-hospital</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-n">03</div>
+      <div class="how-step-title">Nurses go live</div>
+      <div class="how-step-body">One alert per event on any phone they carry. Designed for a busy shift, not a training session.</div>
+      <div class="how-chip">Day 1 ready</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-n">04</div>
+      <div class="how-step-title">Results same day</div>
+      <div class="how-step-body">The COO dashboard shows boarding hours and throughput the same day — not at the next board meeting.</div>
+      <div class="how-chip">Real time</div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-grid">
+    <div class="contact-left">
+      <div class="sec-label" style="margin-bottom:16px">Get in touch</div>
+      <h2><em>See it</em> before<br>you decide.</h2>
+      <p>20-minute demo. We'll show you the live bed board, the alert surface, and walk through what implementation looks like for your hospital.</p>
+      <div class="cd"><div class="cd-icon">⚡</div><div><div class="cd-label">Response time</div><div class="cd-val">Within one business day</div></div></div>
+      <div class="cd"><div class="cd-icon">📍</div><div><div class="cd-label">Location</div><div class="cd-val">Dallas–Fort Worth, TX</div></div></div>
+    </div>
+    <div class="cf" id="contactForm">
+      <div class="cf-title">Request a Demo</div>
+      <div class="fr">
+        <div class="fg"><label>First Name</label><input type="text" placeholder="Sarah"></div>
+        <div class="fg"><label>Last Name</label><input type="text" placeholder="Johnson"></div>
+      </div>
+      <div class="fg"><label>Work Email</label><input type="email" placeholder="sarah@hospital.org"></div>
+      <div class="fg"><label>Hospital</label><input type="text" placeholder="Methodist Health System"></div>
+      <div class="fg"><label>Your Role</label>
+        <select>
+          <option value="">Select role</option>
+          <option>COO / VP Operations</option>
+          <option>Charge Nurse / Clinical Ops</option>
+          <option>IT / Systems Integration</option>
+          <option>CFO / Finance</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Anything specific? (optional)</label><textarea placeholder="Integration questions, pilot details..."></textarea></div>
+      <button class="fsub" onclick="submitForm()">Request Demo →</button>
+      <div class="fn">We respond within one business day.</div>
+    </div>
+    <div class="form-ok" id="formOk">
+      <div style="font-size:40px;margin-bottom:12px">✓</div>
+      <h3>Request received.</h3>
+      <p>We'll be in touch within one business day.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="#" class="foot-logo">
+    <div class="foot-logo-mark"><span class="foot-logo-h">H</span></div>
+    <span class="foot-logo-text">Helio-Ops</span>
+  </a>
+  <div class="foot-right">
+    <a href="#product">Product</a>
+    <a href="#how">How it works</a>
+    <a href="#contact">Contact</a>
+    <span>© 2026 HelioOps · helioops.ai</span>
+  </div>
+</footer>
+
+<script>
+function setRole(btn, role) {
+  document.querySelectorAll('.rtab').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.role-panel').forEach(p => p.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('rp-' + role).classList.add('on');
+}
+function submitForm() {
+  document.getElementById('contactForm').style.display = 'none';
+  document.getElementById('formOk').style.display = 'block';
+}
+</script>
+</body>
+</html>
