@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -521,7 +522,7 @@ footer{padding:36px 48px;display:flex;justify-content:space-between;align-items:
       <div class="cd"><div class="cd-icon">⚡</div><div><div class="cd-label">Response time</div><div class="cd-val">Within one business day</div></div></div>
       <div class="cd"><div class="cd-icon">📍</div><div><div class="cd-label">Location</div><div class="cd-val">Dallas–Fort Worth, TX</div></div></div>
     </div>
-    <div class="cf" id="contactForm">
+    <form class="cf" id="contactForm" action="https://formspree.io/f/xnjyzkzl" method="POST">
       <div class="cf-title">Request a Demo</div>
       <div class="fr">
         <div class="fg"><label>First Name</label><input type="text" placeholder="Sarah"></div>
@@ -540,8 +541,9 @@ footer{padding:36px 48px;display:flex;justify-content:space-between;align-items:
         </select>
       </div>
       <div class="fg"><label>Anything specific? (optional)</label><textarea placeholder="Integration questions, pilot details..."></textarea></div>
-      <button class="fsub" onclick="submitForm()">Request Demo →</button>
+      <button type="submit" class="fsub">Request Demo →</button>
       <div class="fn">We respond within one business day.</div>
+    </form>
     </div>
     <div class="form-ok" id="formOk">
       <div style="font-size:40px;margin-bottom:12px">✓</div>
