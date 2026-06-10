@@ -522,17 +522,13 @@ footer{padding:36px 48px;display:flex;justify-content:space-between;align-items:
       <div class="cd"><div class="cd-icon">⚡</div><div><div class="cd-label">Response time</div><div class="cd-val">Within one business day</div></div></div>
       <div class="cd"><div class="cd-icon">📍</div><div><div class="cd-label">Location</div><div class="cd-val">Dallas–Fort Worth, TX</div></div></div>
     </div>
-    <div data-fs-success style="display:none;text-align:center;padding:40px 20px"><div style="font-size:40px;margin-bottom:12px">✓</div><h3 style="font-family:Instrument Serif,serif;font-size:26px;margin-bottom:8px">Request received.</h3><p style="font-size:13px;color:#3D4450">We'll be in touch within one business day.</p></div>
-    <div data-fs-error style="color:#D94040;font-size:13px;margin-bottom:12px;display:none"></div>
     <form class="cf" action="https://formspree.io/f/xnjyzkzl" method="POST">
       <div class="cf-title">Request a Demo</div>
-      <input type="hidden" name="_subject" value="New Demo Request — Helio-Ops">
-      <input type="hidden" name="_next" value="https://helio-ops.com/thanks.html">
       <div class="fr">
         <div class="fg"><label>First Name</label><input type="text" name="first_name" placeholder="Sarah"></div>
         <div class="fg"><label>Last Name</label><input type="text" name="last_name" placeholder="Johnson"></div>
       </div>
-      <div class="fg"><label>Work Email</label><input type="email" name="email" placeholder="sarah@hospital.org" required></div>
+      <div class="fg"><label>Work Email *</label><input type="email" name="email" placeholder="sarah@hospital.org" required></div>
       <div class="fg"><label>Hospital</label><input type="text" name="hospital" placeholder="Methodist Health System"></div>
       <div class="fg"><label>Your Role</label>
         <select name="role">
@@ -544,13 +540,12 @@ footer{padding:36px 48px;display:flex;justify-content:space-between;align-items:
           <option>Other</option>
         </select>
       </div>
-      <div class="fg"><label>Anything specific? (optional)</label><textarea name="message" placeholder="Integration questions, pilot details..."></textarea></div>
+      <div class="fg"><label>Message (optional)</label><textarea name="message" placeholder="Integration questions, pilot details..."></textarea></div>
       <button type="submit" class="fsub">Request Demo →</button>
       <div class="fn">We respond within one business day.</div>
     </form>
     </div>
-    <div class="form-ok" id="formOk">
-      <div style="font-size:40px;margin-bottom:12px">✓</div>
+    
       <h3>Request received.</h3>
       <p>We'll be in touch within one business day.</p>
     </div>
@@ -577,7 +572,6 @@ function setRole(btn, role) {
   btn.classList.add('on');
   document.getElementById('rp-' + role).classList.add('on');
 }
-/* handleSubmit removed */
   e.preventDefault();
   const form = e.target;
   const data = new FormData(form);
@@ -588,21 +582,15 @@ function setRole(btn, role) {
   });
   if (response.ok) {
     form.style.display = 'none';
-    document.getElementById('formOk').style.display = 'block';
   } else {
     alert('Something went wrong. Please try again.');
   }
 }
-function submitForm() {
-  document.getElementById('contactForm').style.display = 'none';
-  document.getElementById('formOk').style.display = 'block';
-}
+
 </script>
 
 <script>
-  window.formspree = window.formspree || function () { (formspree.q = formspree.q || []).push(arguments); };
-  formspree('initForm', { formElement: '#contactForm', formId: 'xnjyzkzl' });
-</script>
-<script src="https://unpkg.com/@formspree/ajax@1" defer></script>
+  
+
 </body>
 </html>
